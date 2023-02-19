@@ -16,13 +16,15 @@ namespace StrategyManagerSolution.Adorners
     {
         VisualCollection AdornerVisuals { get; }
         public Thumb thumb;
-        static readonly int THUMB_WIDTH = 30;
-        static readonly int THUMB_HEIGHT = 30;
+        public int ThumbWidth { get; set; }
+        public int ThumbHeight { get; set; }
         public event Action? Drag;
-        public MoveAdorner(UIElement adornedElement) : base(adornedElement)
+        public MoveAdorner(UIElement adornedElement, int width, int height) : base(adornedElement)
         {
+            ThumbWidth = width;
+            ThumbHeight = height;
             AdornerVisuals = new VisualCollection(this);
-            thumb = new Thumb() { Background = Brushes.Transparent, Height = THUMB_HEIGHT, Width = THUMB_WIDTH };
+            thumb = new Thumb() { Background = Brushes.Transparent, Height = ThumbHeight, Width = ThumbWidth };
             thumb.DragDelta += Thumb_DragDelta;
             AdornerVisuals.Add(thumb);
             AdornerStyle adornerStyle = new AdornerStyle();
@@ -42,7 +44,7 @@ namespace StrategyManagerSolution.Adorners
         }
         protected override Size ArrangeOverride(Size finalSize)
         {
-            thumb.Arrange(new Rect(0, 0, THUMB_WIDTH, THUMB_HEIGHT));
+            thumb.Arrange(new Rect(0, 0, ThumbWidth, ThumbHeight));
             return base.ArrangeOverride(finalSize);
         }
         protected override int VisualChildrenCount => AdornerVisuals.Count;

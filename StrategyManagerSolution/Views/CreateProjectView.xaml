@@ -21,18 +21,18 @@
         <TextBlock Grid.Row="0" Text="Strategy Manager" FontSize="40" Margin="20 0 0 0"/>
         <TextBlock Grid.Row="1" Text="创建项目" FontSize="30" Margin="20 0 0 0"/>
         <TextBlock Grid.Row="2" Text="项目名称" FontSize="20" Margin="40 0 0 0"/>
-        <TextBox Grid.Row="3" FontSize="30" Margin="40 0 0 0" Width="400" HorizontalAlignment="Left" Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBox Grid.Row="3" FontSize="18" Margin="40 0 0 0" Width="400" Height="35" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="{Binding ProjectName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         <TextBlock Grid.Row="4" Text="位置" FontSize="20" Margin="40 0 0 0"/>
         <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" FontSize="30" Margin="40 0 0 0" Width="320" HorizontalAlignment="Left" Text="{Binding Location, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Grid.Column="0" FontSize="18" Margin="40 0 0 0" Width="320" Height="35" HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="{Binding Location, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <Button Grid.Column="1" Content="选择文件夹" Command="{Binding SelectFolderCommand}" Width="80" FontSize="15" HorizontalAlignment="Left"/>
         </Grid>
         <TextBlock Grid.Row="6" Text="Visual Studio 解决方案和项目名称" FontSize="20" Margin="40 0 0 0"/>
-        <TextBox Grid.Row="7" FontSize="30" Margin="40 0 0 0" Width="400" HorizontalAlignment="Left" Text="{Binding VisualStudioSolutionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <TextBox Grid.Row="7" FontSize="18" Margin="40 0 0 0" Width="400" Height="35"  HorizontalAlignment="Left" VerticalContentAlignment="Center" Text="{Binding VisualStudioSolutionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         <Grid Grid.Row="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>

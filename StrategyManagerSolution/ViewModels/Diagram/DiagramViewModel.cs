@@ -1,4 +1,5 @@
-﻿using StrategyManagerSolution.DiagramMisc;
+﻿using Contracts.MVVMModels;
+using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.Models;
 using StrategyManagerSolution.MVVMUtils;
 using StrategyManagerSolution.Views.Diagram;
@@ -29,13 +30,16 @@ namespace StrategyManagerSolution.ViewModels.Diagram
         public DisplayTileViewModel DisplayTile1 { get; }
         public DisplayTileViewModel DisplayTile2 { get; }
         public DisplayTileViewModel DisplayTile3 { get; }
-        public string HintText { get; set; } = "Diagram operation hint messages here!";
+		public DisplayTileViewModel DisplayTile4 { get; }
+		public string HintText { get; set; } = "Diagram operation hint messages here!";
         public ObservableCollection<string> ProjectFiles { get; set; } = new();
         public string ProjectName { get; set; } ="";
+        public string SelectedFile { get; set; }
         public Command DropCommand { get; }
         public Command ClickCommand { get; }
         public Command MouseLeftButtonUpCommand { get; }
         public Command CanvasLoadedCommand { get; }
+        public Command FileSelectionChangedCommand { get; }
         public event Action? CanvasClicked;
         public event Action<KeyEventArgs>? KeyDown;
         public event Action? DragLineStarted;
@@ -44,21 +48,64 @@ namespace StrategyManagerSolution.ViewModels.Diagram
         public DiagramViewModel(Model model)
         {
             _model = model;
-            DisplayTile0 = new DisplayTileViewModel() { Text = "HS", ImageName = "../../../Images/114514.jpeg" };
-            DisplayTile1 = new DisplayTileViewModel() { Text = "PS", ImageName = "../../../Images/fufu.jpg" };
-            DisplayTile2 = new DisplayTileViewModel() { Text = "H", ImageName = "../../../Images/53.jpg" };
-            DisplayTile3 = new DisplayTileViewModel() { Text = "P", ImageName = "../../../Images/gua.jpg" };
+            DisplayTile0 = new DisplayTileViewModel() { Text = "Start", ImageName = "../../../Images/Start.jpg" };
+			DisplayTile1 = new DisplayTileViewModel() { Text = "HS", ImageName = "../../../Images/114514.jpeg" };
+            DisplayTile2 = new DisplayTileViewModel() { Text = "PS", ImageName = "../../../Images/fufu.jpg" };
+            DisplayTile3 = new DisplayTileViewModel() { Text = "H", ImageName = "../../../Images/53.jpg" };
+            DisplayTile4 = new DisplayTileViewModel() { Text = "P", ImageName = "../../../Images/gua.jpg" };
+            
             DropCommand = new Command(OnDrop);
             ClickCommand = new Command(OnClick);
             MouseLeftButtonUpCommand= new Command(OnMouseLeftButtonUp);
             CanvasLoadedCommand = new Command(OnCanvasLoaded);
+            FileSelectionChangedCommand = new Command(OnFileSelectionChanged);
             foreach(var solutionModel in _model.CurrentProjectModel!.SolutionModels)
             {
                 ProjectFiles.Add(solutionModel.SolutionFileName);
             }
             ProjectName = $"项目'{_model.CurrentProjectModel.ProjectName}'";
+            if (_model.CurrentSolutionModel != null)
+            {
+                SelectedFile = $"文件: {_model.CurrentSolutionModel!.SolutionFileName}";
+            }
+            else
+            {
+                SelectedFile = $"未选择文件";
+            }
+            LoadSolutionFile();
         }
-        public void OnDrop(object? obj)
+        private void LoadSolutionFile()
+        {
+            DiagramItems.Clear();
+            DiagramItemViewModels.Clear();
+            foreach(var diagramItemModel in _model.CurrentSolutionModel!.DiagramItemModels)
+            {
+                if (diagramItemModel is StartModel)
+                {
+                    StartView startView = new StartView();
+                    StartViewModel startViewModel = new StartViewModel(startView, (StartModel)diagramItemModel);
+                    startView.DataContext = startViewModel;
+                    DiagramItems.Add(startView);
+                    DiagramItemViewModels.Add(startViewModel);
+                    Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
+                    Canvas.SetTop(startView, startViewModel.CanvasPos.Y);
+                }
+                else
+                {
+
+                }
+            }
+        }
+		private void OnFileSelectionChanged(object? obj)
+		{
+			SelectionChangedEventArgs e = (SelectionChangedEventArgs)obj!;
+			string filename = (string)e.AddedItems[0]!;
+            _model.CurrentSolutionModel = (from solutionModel in _model.CurrentProjectModel!.SolutionModels where solutionModel.SolutionFileName == filename select solutionModel).First();
+            SelectedFile = $"文件: {filename}";
+            OnPropertyChanged(nameof(SelectedFile));
+		}
+
+		public void OnDrop(object? obj)
         {
             DragEventArgs e = (obj as DragEventArgs)!;
             DisplayTileViewModel displayTile = (e.Data.GetData(typeof(DisplayTileViewModel)) as DisplayTileViewModel)!;
@@ -69,20 +116,38 @@ namespace StrategyManagerSolution.ViewModels.Diagram
                     Point pos = e.GetPosition(Canvas);
                     switch(displayTile.Text)
                     {
+                        case "Start":
+                            {
+                                StartModel startModel = new StartModel(pos);
+                                StartView startView = new StartView();
+                                StartViewModel startViewModel = new StartViewModel(startView, startModel);
+                                startView.DataContext=startViewModel;
+
+                                DiagramItems.Add(startView);
+                                DiagramItemViewModels.Add(startViewModel);
+                                Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
+                                Canvas.SetTop(startView, startViewModel.CanvasPos.Y);
+								break;
+							}
                         default:
                             {
                                 StrategySetView strategySetView = new StrategySetView();
                                 StrategySetViewModel strategySetViewModel = new StrategySetViewModel(strategySetView);
+                                // 属性注册
                                 strategySetViewModel.Text = "Strategy Set Name Here!";
                                 strategySetViewModel.ImageName = "../../../Images/114514.jpeg";
+                                // 拖动连接提醒
                                 strategySetViewModel.DragStarted += OnDragStarted;
                                 strategySetViewModel.DragEnded += OnDragEnded;
+                                // 策略集中策略绝对位置变更提醒
                                 strategySetViewModel.NotifyStrategyPosition += OnNotifyStrategyPosition;
                                 strategySetViewModel.NotifyStrategySetPosition += OnNotifyStrategySetPosition;
+                                // 外部消息注册
                                 CanvasClicked += strategySetViewModel.OnCanvasClicked;
                                 KeyDown += strategySetViewModel.OnKeyDown;
                                 DragLineStarted += strategySetViewModel.OnDragLineStarted;
                                 DragLineEnded += strategySetViewModel.OnDragLineEnded;
+
                                 strategySetView.DataContext= strategySetViewModel;
                                 DiagramItems.Add(strategySetView);
                                 DiagramItemViewModels.Add(strategySetViewModel);

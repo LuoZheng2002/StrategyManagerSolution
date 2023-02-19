@@ -8,11 +8,10 @@
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    
+
     <Grid ClipToBounds="True">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width ="auto" MinWidth="150"/>
-            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -23,58 +22,79 @@
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Text="{Binding ProjectName}" FontSize="20"/>
             <ScrollViewer Grid.Row="1">
-                <ListView ItemsSource="{Binding ProjectFiles}" FontSize="20"/>
+                <ListView ItemsSource="{Binding ProjectFiles}" FontSize="20">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <i:InvokeCommandAction Command="{Binding FileSelectionChangedCommand}" PassEventArgsToCommand="True"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ListView>
             </ScrollViewer>
         </Grid>
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-        
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <views:DisplayTileView Grid.Row="0" Grid.Column="0" DataContext="{Binding DisplayTile0}"/>
-            <views:DisplayTileView Grid.Row="0" Grid.Column="1" DataContext="{Binding DisplayTile1}"/>
-            <views:DisplayTileView Grid.Row="1" Grid.Column="0" DataContext="{Binding DisplayTile2}"/>
-            <views:DisplayTileView Grid.Row="1" Grid.Column="1" DataContext="{Binding DisplayTile3}"/>
+            <TextBlock Grid.Row="0" Text="{Binding SelectedFile}" FontSize="20"/>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <views:DisplayTileView Grid.Row="0" Grid.Column="0" DataContext="{Binding DisplayTile0}"/>
+                    <views:DisplayTileView Grid.Row="0" Grid.Column="1" DataContext="{Binding DisplayTile1}"/>
+                    <views:DisplayTileView Grid.Row="1" Grid.Column="0" DataContext="{Binding DisplayTile2}"/>
+                    <views:DisplayTileView Grid.Row="1" Grid.Column="1" DataContext="{Binding DisplayTile3}"/>
+                    <views:DisplayTileView Grid.Row="2" Grid.Column="0" DataContext="{Binding DisplayTile4}"/>
+                </Grid>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+                        <ItemsControl ItemsSource="{Binding Path=DiagramItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas Background="LightGray" AllowDrop="True" ClipToBounds="True" Width="2000" Height="2000">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Drop">
+                                                <i:InvokeCommandAction Command="{Binding DropCommand}" PassEventArgsToCommand="True"/>
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                                                <i:InvokeCommandAction Command="{Binding ClickCommand}"/>
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding MouseLeftButtonUpCommand}" PassEventArgsToCommand="True"/>
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="Loaded">
+                                                <i:InvokeCommandAction Command="{Binding CanvasLoadedCommand}" PassEventArgsToCommand="True"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Canvas>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <TextBlock Grid.Row="1" FontSize="20" Text="{Binding HintText}" TextAlignment="Center"/>
+                </Grid>
+            </Grid>
         </Grid>
-        <Grid Grid.Column="3">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
-            <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
-                <ItemsControl ItemsSource="{Binding Path=DiagramItems}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas Background="LightGray" AllowDrop="True" ClipToBounds="True" Width="2000" Height="2000">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="Drop">
-                                        <i:InvokeCommandAction Command="{Binding DropCommand}" PassEventArgsToCommand="True"/>
-                                    </i:EventTrigger>
-                                    <i:EventTrigger EventName="MouseLeftButtonDown">
-                                        <i:InvokeCommandAction Command="{Binding ClickCommand}"/>
-                                    </i:EventTrigger>
-                                    <i:EventTrigger EventName="MouseLeftButtonUp">
-                                        <i:InvokeCommandAction Command="{Binding MouseLeftButtonUpCommand}" PassEventArgsToCommand="True"/>
-                                    </i:EventTrigger>
-                                    <i:EventTrigger EventName="Loaded">
-                                        <i:InvokeCommandAction Command="{Binding CanvasLoadedCommand}" PassEventArgsToCommand="True"/>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
-                            </Canvas>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </ScrollViewer>
-            <TextBlock Grid.Row="1" FontSize="20" Text="{Binding HintText}" TextAlignment="Center"/>
-        </Grid>
+
     </Grid>
 </UserControl>

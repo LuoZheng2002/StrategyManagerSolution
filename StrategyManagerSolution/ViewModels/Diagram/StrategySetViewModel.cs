@@ -94,7 +94,7 @@ namespace StrategyManagerSolution.ViewModels
 			MouseEnterCommand = new Command(OnMouseEnter);
 			MouseLeaveCommand = new Command(OnMouseLeave);
 			View = view;
-			MoveAdorner = new MoveAdorner(view);
+			MoveAdorner = new MoveAdorner(view, 30, 30);
 			MoveAdorner.Drag += OnPositionChanged;
 			MoveAdorner.Drag += OnNotifyStrategySetPosition;
 		}
