@@ -1,0 +1,52 @@
+﻿<Window x:Class="StrategyManagerSolution.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StrategyManagerSolution"
+        xmlns:vms="clr-namespace:StrategyManagerSolution.ViewModels"
+        xmlns:views="clr-namespace:StrategyManagerSolution.Views"
+        xmlns:dvms="clr-namespace:StrategyManagerSolution.ViewModels.Diagram"
+        xmlns:dviews="clr-namespace:StrategyManagerSolution.Views.Diagram"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type dvms:DiagramViewModel}">
+            <dviews:DiagramView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type dvms:DisplayTileViewModel}">
+            <dviews:DisplayTileView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:StartMenuViewModel}">
+            <views:StartMenuView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:CreateProjectViewModel}">
+            <views:CreateProjectView/>
+        </DataTemplate>
+    </Window.Resources>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="KeyDown">
+            <i:InvokeCommandAction Command="{Binding KeyDownCommand}" PassEventArgsToCommand="True"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="文件" FontSize="20">
+                <MenuItem Header="新建"/>
+                <MenuItem Header="打开"/>
+                <MenuItem Header="保存"/>
+            </MenuItem>
+            <MenuItem Header="编辑" FontSize="20"/>
+            <MenuItem Header="视图" FontSize="20"/>
+            <MenuItem Header="生成" FontSize="20">
+                <MenuItem Header="生成解决方案"/>
+            </MenuItem>
+        </Menu>
+        <ContentControl Grid.Row="1" Content="{Binding CurrentViewModel}"/>
+    </Grid>
+</Window>
