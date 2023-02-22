@@ -18,13 +18,16 @@ using StrategyManagerSolution.Adorners;
 using StrategyManagerSolution.Views.Diagram;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.ViewModels.Diagram;
+using Contracts.MVVMModels;
 
 namespace StrategyManagerSolution.ViewModels
 {
-	internal class StrategySetViewModel : ViewModelBase, ISelectable
+	internal class StrategySetViewModel : ViewModelBase, ISelectable, IDragDestination, IHasPosition
 	{
 		public MoveAdorner MoveAdorner { get; set; }
 		public StrategySetView View { get; set; }
+		private StrategySetModel _strategySetModel;
+		public DiagramElementModel DestinationModel => _strategySetModel;
 		public ConnectionLine? Line { get; set; }
 		public bool DraggingLine { get; set; }
 		private bool _isSelected;
@@ -78,25 +81,43 @@ namespace StrategyManagerSolution.ViewModels
 		public Command MouseEnterCommand { get; }
 		public Command MouseLeaveCommand { get; }
 
+		public FrameworkElement DragDestinationView => View;
+
+		public ConnectionLine? LineEntering { get; set; }
+		public IDragSource? LinkingFrom { get; set; }
+		public Point Offset { get; } = new Point(0, 0);
+		public Point CanvasPos
+		{
+			get { return _strategySetModel.CanvasPos; }
+			set { _strategySetModel.CanvasPos = value; }
+		}
+
+		public FrameworkElement PositionView => throw new NotImplementedException();
+
 		public event Action? CanvasClicked;
 		public event Action<KeyEventArgs>? KeyDown;
-		public event Action<StrategySetViewModel, StrategyViewModel, FrameworkElement>? DragStarted;
-		public event Action<StrategySetViewModel, StrategySetView>? DragEnded;
-		public event Action? PositionChanged;
-		public event Action<StrategySetViewModel, StrategyViewModel, FrameworkElement>? NotifyStrategyPosition;
-		public event Action<StrategySetViewModel, StrategySetView>? NotifyStrategySetPosition;
-		public StrategySetViewModel(StrategySetView view)
+		public event Action<IDragSource>? DragStarted;
+		public event Action<IDragDestination>? DragEnded;
+		public event Action<ViewModelBase>? PositionChanged;
+
+		public StrategySetViewModel(StrategySetView view, StrategySetModel strategySetModel)
 		{
+			View = view;
+			_strategySetModel = strategySetModel;
 			DropCommand = new Command(OnDrop);
 			SelectCommand = new Command(OnSelect);
 			MouseLeftButtonUpCommand = new Command(OnMouseLeftButtonUp);
 			LoadedCommand = new Command(OnLoaded);
 			MouseEnterCommand = new Command(OnMouseEnter);
 			MouseLeaveCommand = new Command(OnMouseLeave);
-			View = view;
+			
 			MoveAdorner = new MoveAdorner(view, 30, 30);
-			MoveAdorner.Drag += OnPositionChanged;
-			MoveAdorner.Drag += OnNotifyStrategySetPosition;
+			MoveAdorner.Drag += OnDrag;
+		}
+
+		private void OnDrag()
+		{
+			PositionChanged?.Invoke(this);
 		}
 
 		private void OnMouseLeave(object? obj)
@@ -134,27 +155,27 @@ namespace StrategyManagerSolution.ViewModels
 				adornerLayer.Add(MoveAdorner);
 			}
 		}
-		void OnDragStarted(StrategyViewModel strategyViewModel, FrameworkElement dragSource)
+		void OnDragStarted(IDragSource dragSource)
 		{
-			DragStarted?.Invoke(this, strategyViewModel, dragSource);
+			DragStarted?.Invoke(dragSource);
 		}
 		private void AddChild(int index)
 		{
+			StrategyModel strategyModel = new StrategyModel("strategyName", "className");
 			StrategyView strategyView = new StrategyView();
-			StrategyViewModel strategyViewModel = new StrategyViewModel(strategyView);
+			StrategyViewModel strategyViewModel = new StrategyViewModel(strategyView, strategyModel);
 			strategyView.DataContext = strategyViewModel;
 			strategyViewModel.Dropped += OnChildDrop;
 			strategyViewModel.DragStarted += OnDragStarted;
 			strategyViewModel.DeleteChild += OnDeleteChild;
-			strategyViewModel.NotifyStrategyPosition += OnNotifyStrategyPosition;
+			PositionChanged += strategyViewModel.OnPositionChanged;
 			StrategyViews.Insert(index, strategyView);
 			StrategyViewModels.Insert(index, strategyViewModel);
-
+			_strategySetModel.Strategies.Insert(index, strategyModel);
 			// strategyViewModel.SetUpDummyAdorner();
 			strategyViewModel.Text = "Strategy " + number.ToString();
 			CanvasClicked += strategyViewModel.OnCanvasClicked;
 			KeyDown += strategyViewModel.OnKeyDown;
-			PositionChanged += strategyViewModel.OnPositionChanged;
 			number++;
 		}
 
@@ -210,6 +231,7 @@ namespace StrategyManagerSolution.ViewModels
 				strategyViewModel.IsSelected = false;
 				StrategyViewModels.RemoveAt(index);
 				StrategyViews.RemoveAt(index);
+				_strategySetModel.Strategies.RemoveAt(index);
 			}
 			else
 			{
@@ -221,7 +243,7 @@ namespace StrategyManagerSolution.ViewModels
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
 			Console.WriteLine("Mouse left button up triggered in strategy set.");
-			DragEnded?.Invoke(this, View);
+			DragEnded?.Invoke(this);
 		}
 		public void OnConnectionLineDestroyed(ConnectionLine line)
 		{
@@ -231,22 +253,6 @@ namespace StrategyManagerSolution.ViewModels
 			}
 			Line = null;
 		}
-		void OnPositionChanged()
-		{
-			PositionChanged?.Invoke();
-		}
-		public void OnNotifyStrategyPosition(StrategyViewModel strategyViewModel,
-			FrameworkElement element)
-		{
-			NotifyStrategyPosition?.Invoke(this, strategyViewModel, element);
-		}
-		public void OnNotifyStrategySetPosition()
-		{
-			if (Line != null)
-			{
-				NotifyStrategySetPosition?.Invoke(this, View);
-			}
-		}
 		public void OnDragLineStarted()
 		{
 			DraggingLine = true;
@@ -254,6 +260,12 @@ namespace StrategyManagerSolution.ViewModels
 		public void OnDragLineEnded()
 		{
 			DraggingLine = false;
+		}
+
+		public void OnLineEnteringDestroyed(ConnectionLine line)
+		{
+			LineEntering = null;
+			LinkingFrom = null;
 		}
 	}
 }

@@ -11,17 +11,18 @@ namespace StrategyManagerSolution.DiagramMisc
 {
 	internal class DragInfo
 	{
-		public StrategySetViewModel? StrategySetFrom { get; set; }
-		public StrategySetViewModel? StrategySetTo { get; set; }
-		public StrategyViewModel? StrategyFrom { get; set; }
+		public IDragSource? DragSource { get; set; }
+		public IDragDestination? DragDestination { get; set; }
 		public bool Dragging { get; set; }
 		public Point StartPos { get; set; }
+		public Point EndPos { get; set; }
 		public void Clear()
 		{
-			StrategySetFrom = null;
-			StrategySetTo = null;
-			StrategyFrom = null;
+			DragSource = null;
+			DragDestination = null;
 			Dragging = false;
+			StartPos = new();
+			EndPos = new();
 		}
 	}
 }

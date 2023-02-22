@@ -1,7 +1,9 @@
-﻿using Contracts.MVVMModels;
+﻿using Contracts.Enums;
+using Contracts.MVVMModels;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.Models;
 using StrategyManagerSolution.MVVMUtils;
+using StrategyManagerSolution.Utils;
 using StrategyManagerSolution.Views.Diagram;
 using System;
 using System.Collections.Generic;
@@ -40,11 +42,12 @@ namespace StrategyManagerSolution.ViewModels.Diagram
         public Command MouseLeftButtonUpCommand { get; }
         public Command CanvasLoadedCommand { get; }
         public Command FileSelectionChangedCommand { get; }
+        public Command SaveFileCommand { get; }
         public event Action? CanvasClicked;
         public event Action<KeyEventArgs>? KeyDown;
         public event Action? DragLineStarted;
         public event Action? DragLineEnded;
-
+        
         public DiagramViewModel(Model model)
         {
             _model = model;
@@ -59,9 +62,10 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             MouseLeftButtonUpCommand= new Command(OnMouseLeftButtonUp);
             CanvasLoadedCommand = new Command(OnCanvasLoaded);
             FileSelectionChangedCommand = new Command(OnFileSelectionChanged);
-            foreach(var solutionModel in _model.CurrentProjectModel!.SolutionModels)
+            SaveFileCommand = new Command(OnSaveFile);
+            foreach(var solutionName in _model.CurrentProjectModel!.SolutionNames)
             {
-                ProjectFiles.Add(solutionModel.SolutionFileName);
+                ProjectFiles.Add(solutionName + ".smsln");
             }
             ProjectName = $"项目'{_model.CurrentProjectModel.ProjectName}'";
             if (_model.CurrentSolutionModel != null)
@@ -74,7 +78,13 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             }
             LoadSolutionFile();
         }
-        private void LoadSolutionFile()
+
+		private void OnSaveFile(object? obj)
+		{
+            _model.SaveCurrentSolution();
+		}
+
+		private void LoadSolutionFile()
         {
             DiagramItems.Clear();
             DiagramItemViewModels.Clear();
@@ -85,6 +95,9 @@ namespace StrategyManagerSolution.ViewModels.Diagram
                     StartView startView = new StartView();
                     StartViewModel startViewModel = new StartViewModel(startView, (StartModel)diagramItemModel);
                     startView.DataContext = startViewModel;
+                    startViewModel.PositionChanged += OnDiagramItemPositionChanged;
+                    CanvasClicked += startViewModel.OnDeselect;
+
                     DiagramItems.Add(startView);
                     DiagramItemViewModels.Add(startViewModel);
                     Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
@@ -100,9 +113,14 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		{
 			SelectionChangedEventArgs e = (SelectionChangedEventArgs)obj!;
 			string filename = (string)e.AddedItems[0]!;
-            _model.CurrentSolutionModel = (from solutionModel in _model.CurrentProjectModel!.SolutionModels where solutionModel.SolutionFileName == filename select solutionModel).First();
+            if (_model.CurrentSolutionModel!= null) 
+            {
+                _model.SaveCurrentSolution();
+            }
+            _model.CurrentSolutionModel = Serializer.Deserialize<SolutionModel>(_model.CurrentProjectModel!.ProjectFolder + "/" + filename);
             SelectedFile = $"文件: {filename}";
             OnPropertyChanged(nameof(SelectedFile));
+            LoadSolutionFile();
 		}
 
 		public void OnDrop(object? obj)
@@ -122,37 +140,43 @@ namespace StrategyManagerSolution.ViewModels.Diagram
                                 StartView startView = new StartView();
                                 StartViewModel startViewModel = new StartViewModel(startView, startModel);
                                 startView.DataContext=startViewModel;
+                                CanvasClicked += startViewModel.OnDeselect;
 
-                                DiagramItems.Add(startView);
+								DiagramItems.Add(startView);
                                 DiagramItemViewModels.Add(startViewModel);
-                                Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
+								_model.CurrentSolutionModel!.DiagramItemModels.Add(startModel);
+                                
+
+								Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
                                 Canvas.SetTop(startView, startViewModel.CanvasPos.Y);
 								break;
 							}
                         default:
                             {
+                                StrategySetModel strategySetModel = new StrategySetModel("name", StrategySetType.Hierarchical, pos);
                                 StrategySetView strategySetView = new StrategySetView();
-                                StrategySetViewModel strategySetViewModel = new StrategySetViewModel(strategySetView);
+                                StrategySetViewModel strategySetViewModel = new StrategySetViewModel(strategySetView, strategySetModel);
                                 // 属性注册
                                 strategySetViewModel.Text = "Strategy Set Name Here!";
                                 strategySetViewModel.ImageName = "../../../Images/114514.jpeg";
                                 // 拖动连接提醒
                                 strategySetViewModel.DragStarted += OnDragStarted;
                                 strategySetViewModel.DragEnded += OnDragEnded;
-                                // 策略集中策略绝对位置变更提醒
-                                strategySetViewModel.NotifyStrategyPosition += OnNotifyStrategyPosition;
-                                strategySetViewModel.NotifyStrategySetPosition += OnNotifyStrategySetPosition;
                                 // 外部消息注册
                                 CanvasClicked += strategySetViewModel.OnCanvasClicked;
                                 KeyDown += strategySetViewModel.OnKeyDown;
                                 DragLineStarted += strategySetViewModel.OnDragLineStarted;
                                 DragLineEnded += strategySetViewModel.OnDragLineEnded;
-
+                                // 连接上下文
                                 strategySetView.DataContext= strategySetViewModel;
+                                // 装入容器
                                 DiagramItems.Add(strategySetView);
                                 DiagramItemViewModels.Add(strategySetViewModel);
-                                Canvas.SetLeft(strategySetView, pos.X);
-                                Canvas.SetTop(strategySetView, pos.Y);
+                                _model.CurrentSolutionModel!.DiagramItemModels.Add(strategySetModel);
+                                strategySetModel.Destroy += _model.CurrentSolutionModel!.OnDiagramItemDestroy;
+
+                                Canvas.SetLeft(strategySetView, strategySetViewModel.CanvasPos.X);
+                                Canvas.SetTop(strategySetView, strategySetViewModel.CanvasPos.Y);
                                 break;
                             }
                     }
@@ -165,12 +189,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 				}
             }
         }
-
-		private void DiagramViewModel_DragLineEnded()
-		{
-			throw new NotImplementedException();
-		}
-
+        //用于撤销选中
 		public void OnClick(object? obj)
         {
             Console.WriteLine("Clicked on canvas!");
@@ -186,56 +205,55 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             _dragInfo.Clear();
             DragLineEnded?.Invoke();
         }
-        void OnDragStarted(StrategySetViewModel strategySetViewModel,
-            StrategyViewModel strategyViewModel,
-            FrameworkElement dragSource)
+        void OnDragStarted(IDragSource dragSource)
         {
             _dragInfo.Dragging = true;
-            _dragInfo.StrategySetFrom = strategySetViewModel;
-            _dragInfo.StrategyFrom = strategyViewModel;
-            _dragInfo.StartPos = GetStartPosition(dragSource);
+            _dragInfo.DragSource = dragSource;
+            Point dragSourcePos = dragSource.DragSourceView.TranslatePoint(new Point(0, 0), Canvas);
+			_dragInfo.StartPos = new Point(dragSourcePos.X + dragSource.Offset.X, dragSourcePos.Y + dragSource.Offset.Y);
 			Console.WriteLine($"Dragged at ({_dragInfo.StartPos.X}, {_dragInfo.StartPos.Y})");
             DragLineStarted?.Invoke();
         }
-        void OnDragEnded(StrategySetViewModel strategySetViewModel,
-            StrategySetView strategySetView)
+        void OnDragEnded(IDragDestination dragDestination)
         {
             if (_dragInfo.Dragging)
             {
-                _dragInfo.StrategySetTo = strategySetViewModel;
-                if (_dragInfo.StrategyFrom!.Line == null 
-                    && _dragInfo.StrategySetTo.Line == null
-                    && _dragInfo.StrategySetFrom != _dragInfo.StrategySetTo)
+                _dragInfo.DragDestination = dragDestination;
+                Point dragDestinationPos = dragDestination.DragDestinationView.TranslatePoint(new Point(0,0), Canvas);
+                _dragInfo.EndPos = new Point(dragDestinationPos.X + dragDestination.Offset.X, dragDestinationPos.Y + dragDestination.Offset.Y);
+                if (_dragInfo.DragSource!.LineLeaving == null 
+                    && _dragInfo.DragDestination!.LineEntering == null)
                 {
-                    Point endPos = GetEndPosition(strategySetView);
                     ConnectionLine line = new ConnectionLine(new Line
                     {
                         X1 = _dragInfo.StartPos.X,
-                        X2 = endPos.X,
+                        X2 = _dragInfo.EndPos.X,
                         Y1 = _dragInfo.StartPos.Y,
-                        Y2 = endPos.Y,
+                        Y2 = _dragInfo.EndPos.Y,
                         Stroke = Brushes.Black,
                         StrokeThickness = 5
                     },
-                    _dragInfo.StrategyFrom,
-                    _dragInfo.StrategySetTo);
+                    _dragInfo.DragSource,
+                    _dragInfo.DragDestination);
+                    // 内部注册外部事件
                     KeyDown += line.OnKeyDown;
                     CanvasClicked += line.OnDeselect;
+                    // 外部注册内部事件
                     line.Destroyed += OnConnectionLineDestroyed;
+
                     DiagramItems.Add(line.Line);
-                    _dragInfo.StrategyFrom!.Line = line;
-                    _dragInfo.StrategySetTo!.Line = line;
-                    line.Destroyed += _dragInfo.StrategyFrom!.OnConnectionLineDestroyed;
-                    line.Destroyed += _dragInfo.StrategySetTo!.OnConnectionLineDestroyed;
-                    _dragInfo.StrategyFrom.StrategySetConnectedTo = _dragInfo.StrategySetTo;
+                    _dragInfo.DragSource!.LineLeaving = line;
+                    _dragInfo.DragDestination!.LineEntering = line;
+                    line.Destroyed += _dragInfo.DragSource!.OnLineLeavingDestroyed;
+                    line.Destroyed += _dragInfo.DragDestination!.OnLineEnteringDestroyed;
+                    _dragInfo.DragSource.LinkingTo = _dragInfo.DragDestination;
+                    _dragInfo.DragDestination.LinkingFrom = _dragInfo.DragSource;
+                    // 外部订阅被连接物体的事件
+                    _dragInfo.DragSource.PositionChanged += OnConnectedItemPositionChanged;
+                    _dragInfo.DragDestination.PositionChanged += OnConnectedItemPositionChanged;
+
                     _dragInfo.Clear();
                 }
-                else if (_dragInfo.StrategySetFrom == _dragInfo.StrategySetTo)
-                {
-                    Console.WriteLine("不能连接自己！");
-					HintText = "不能连接自己!";
-					OnPropertyChanged(nameof(HintText));
-				}
                 else
                 {
                     Console.WriteLine("你已经连接过一条线了！");
@@ -246,49 +264,48 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			_dragInfo.Clear();
 			DragLineEnded?.Invoke();
 		}
-        Point GetStartPosition(FrameworkElement element)
-        {
-            Point pos = element.TranslatePoint(new Point(0, 0), Canvas);
-            pos.X += element.Width / 2;
-            pos.Y += element.Height / 2;
-            return pos;
-        }
-        Point GetEndPosition(StrategySetView strategySetView)
-        {
-            Point pos = strategySetView.TranslatePoint(new Point(0, 0), Canvas);
-            pos.Y += 10;
-            return pos;
-        }
         void OnConnectionLineDestroyed(ConnectionLine line)
         {
+            // 取消订阅位置移动事件
+            line.DragSource.PositionChanged -= OnConnectedItemPositionChanged;
+            line.DragDestination.PositionChanged -= OnConnectedItemPositionChanged;
             DiagramItems.Remove(line.Line);
         }
-        void OnNotifyStrategyPosition(StrategySetViewModel strategySetViewModel,
-            StrategyViewModel strategyViewModel,
-            FrameworkElement element)
+        void OnDiagramItemPositionChanged(ViewModelBase diagramItem)
         {
-            if (strategyViewModel.Line != null)
+            if (diagramItem is IHasPosition)
             {
-                strategyViewModel.Line!.OnStartPosChanged(GetStartPosition(element));
-            }
-            else
-            {
-                Console.WriteLine("Strategy doesn't have a line.");
+                IHasPosition hasPosition = (IHasPosition)diagramItem;
+                Point pos = hasPosition.PositionView.TranslatePoint(new Point(0, 0), Canvas);
+                hasPosition.CanvasPos = pos;
             }
         }
-        
-        void OnNotifyStrategySetPosition(StrategySetViewModel strategySetViewModel,
-            StrategySetView strategySetView)
+        void OnConnectedItemPositionChanged(ViewModelBase connectedItem)
         {
-            if (strategySetViewModel.Line != null)
+            if (connectedItem is IDragSource)
             {
-                strategySetViewModel.Line!.OnEndPosChanged(GetEndPosition(strategySetView));
+                IDragSource dragSource = (IDragSource)connectedItem;
+                if (dragSource.LineLeaving == null)
+                {
+					throw new Exception("Line missing, but position changed event subscribed");
+				}
+                Point dragSourcePos = dragSource.DragSourceView.TranslatePoint(new Point(0, 0), Canvas);
+				dragSource.LineLeaving.Line.X1 = dragSourcePos.X + dragSource.Offset.X;
+                dragSource.LineLeaving.Line.Y1 = dragSourcePos.Y + dragSource.Offset.Y;
             }
-            else
+            if (connectedItem is IDragDestination)
             {
-				Console.WriteLine("Strategy set doesn't have a line.");
-			}
+                IDragDestination dragDestination = (IDragDestination)connectedItem;
+                if (dragDestination.LineEntering== null)
+                {
+					throw new Exception("Line missing, but position changed event subscribed");
+				}
+                Point dragDestinationPos = dragDestination.DragDestinationView.TranslatePoint(new Point(0, 0), Canvas);
+                dragDestination.LineEntering.Line.X2 = dragDestinationPos.X + dragDestination.Offset.X;
+                dragDestination.LineEntering.Line.Y2 = dragDestinationPos.Y + dragDestination.Offset.Y;
+            }
         }
+
         //Retrieve Canvas from View
         void OnCanvasLoaded(object? obj)
         {

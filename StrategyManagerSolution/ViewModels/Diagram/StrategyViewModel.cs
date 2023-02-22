@@ -1,4 +1,5 @@
-﻿using StrategyManagerSolution.Adorners;
+﻿using Contracts.MVVMModels;
+using StrategyManagerSolution.Adorners;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.MVVMUtils;
 using StrategyManagerSolution.Views.Diagram;
@@ -17,9 +18,10 @@ using System.Windows.Shapes;
 
 namespace StrategyManagerSolution.ViewModels.Diagram
 {
-	internal class StrategyViewModel : ViewModelBase, ISelectable
+	internal class StrategyViewModel : ViewModelBase, ISelectable, IDragSource
 	{
 		public StrategyView View { get; set; }
+		private StrategyModel _strategyModel;
 		private bool _isSelected;
 		public bool IsSelected
 		{
@@ -41,8 +43,6 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 				}
 			}
 		}
-		public ConnectionLine? Line { get; set; }
-		public StrategySetViewModel? StrategySetConnectedTo { get; set; }
 		private string _text = "";
 		public string Text
 		{
@@ -72,17 +72,37 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public Command MouseLeaveCommand { get; }
 		public Command LoadedCommand { get; }
 		private readonly NodeAdorner _nodeAdorner;
-		private readonly NodeDummyAdorner _nodeDummyAdorner;
 		public TextBlock TextBlock { get; }
+		public FrameworkElement DragSourceView => View;
+		public ConnectionLine? LineLeaving { get; set; }
+		private IDragDestination? _linkingTo;
+		public IDragDestination? LinkingTo
+		{
+			get { return _linkingTo; }
+			set 
+			{ 
+				if (value == null)
+				{
+					_linkingTo = null;
+					_strategyModel.LinkingTo = null;
+				}
+				else
+				{
+					_linkingTo = value;
+					_strategyModel.LinkingTo = _linkingTo.DestinationModel;
+				}
+			}
+		}
+		public Point Offset { get; } = new Point(0,0);
+
 		public event Action? CanvasClicked;
 		public event Action<KeyEventArgs>? KeyDown;
-		public event Action<StrategyViewModel, FrameworkElement>? DragStarted;
-		public event Action? PositionChanged;
-
-		public event Action<StrategyViewModel, FrameworkElement>? NotifyStrategyPosition;
-		public StrategyViewModel(StrategyView view)
+		public event Action<IDragSource>? DragStarted;
+		public event Action<ViewModelBase>? PositionChanged;
+		public StrategyViewModel(StrategyView view, StrategyModel strategyModel)
 		{
 			View = view;
+			_strategyModel = strategyModel;
 			TextBlock = View.TextBlock;
 			DropCommand = new Command(OnDrop);
 			SelectCommand = new Command(OnSelect);
@@ -92,19 +112,13 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			_nodeAdorner = new NodeAdorner(TextBlock);
 			_nodeAdorner.MouseLeave += OnMouseLeaveNodeAdorner;
 			_nodeAdorner.DragStarted += OnDragStarted;
-			_nodeDummyAdorner = new NodeDummyAdorner(TextBlock);
-			_nodeDummyAdorner.NotifyStrategyPosition += OnNotifyStrategyPosition;
-			PositionChanged += _nodeDummyAdorner.OnPositionChanged;
 		}
-		public void SetUpDummyAdorner()
-		{
-			AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(TextBlock);
-			adornerLayer.Add(_nodeDummyAdorner);
-			
-		}
+
+		
+
 		void OnDragStarted(FrameworkElement dragSource)
 		{
-			DragStarted?.Invoke(this, dragSource);
+			DragStarted?.Invoke(this);
 		}
 		private void OnMouseLeaveNodeAdorner(object sender, MouseEventArgs e)
 		{
@@ -164,11 +178,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		{
 			AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(TextBlock);
 			Adorner[] adorners = adornerLayer.GetAdorners(TextBlock);
-			if (adorners == null)
-			{
-				Console.WriteLine("Dummy adorner not successfully added.");
-			}
-			else if (!adorners.Contains(_nodeAdorner))
+			if (adorners == null || !adorners.Contains(_nodeAdorner))
 			{
 				adornerLayer.Add(_nodeAdorner);
 			}
@@ -198,29 +208,19 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		{
 			Console.WriteLine("Strategy Destructed!");
 		}
-		public void OnPositionChanged()
-		{
-			PositionChanged?.Invoke();
-		}
-		public void OnConnectionLineDestroyed(ConnectionLine line)
-		{
-			if (Line != line)
-			{
-				Console.WriteLine("不是一条线？");
-			}
-			Line = null;
-			StrategySetConnectedTo = null;
-		}
-		public void OnNotifyStrategyPosition(FrameworkElement element)
-		{
-			if (Line != null)
-			{
-				NotifyStrategyPosition?.Invoke(this, element);
-			}
-		}
 		public void OnLoaded(object? obj)
 		{
-			SetUpDummyAdorner();
+			// historical issues
+		}
+
+		public void OnLineLeavingDestroyed(ConnectionLine line)
+		{
+			LineLeaving = null;
+			LinkingTo = null;
+		}
+		public void OnPositionChanged(ViewModelBase viewModelBase)
+		{
+			PositionChanged?.Invoke(this);
 		}
 	}
 }

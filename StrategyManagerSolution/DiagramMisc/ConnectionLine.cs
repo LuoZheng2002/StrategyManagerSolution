@@ -17,15 +17,14 @@ namespace StrategyManagerSolution.DiagramMisc
 	{
 		public bool Dead { get; set; }
 		public Line Line { get; set; }
-		public StrategyViewModel StrategyFrom { get; }
-		public StrategySetViewModel StrategySetTo { get; }
-		public ConnectionLine(Line line, StrategyViewModel strategyFrom, 
-			StrategySetViewModel strategySetTo)
+		public IDragSource DragSource { get; }
+		public IDragDestination DragDestination { get; }
+		public ConnectionLine(Line line, IDragSource dragSource, IDragDestination dragDestination)
 		{
 			Line = line;
 			Line.MouseLeftButtonDown += OnMouseLeftButtonDown;
-			StrategyFrom = strategyFrom;
-			StrategySetTo = strategySetTo;
+			DragSource = dragSource;
+			DragDestination = dragDestination;
 		}
 
 		private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
