@@ -75,7 +75,7 @@ namespace StrategyManagerSolution.DiagramMisc
 				IsSelected = false;
 			}
 		}
-		void OnDeletePressed()
+		public void OnDestroy()
 		{
 			Destroyed?.Invoke(this);
 			Dead = true;
@@ -86,7 +86,7 @@ namespace StrategyManagerSolution.DiagramMisc
 			{
 				if (e.Key == Key.Delete && IsSelected)
 				{
-					OnDeletePressed();
+					OnDestroy();
 				}
 			}
 		}

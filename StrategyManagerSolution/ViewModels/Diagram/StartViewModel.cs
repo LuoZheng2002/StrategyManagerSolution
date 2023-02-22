@@ -8,19 +8,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Contracts.MVVMModels;
 using StrategyManagerSolution.Adorners;
-using System.Windows.Forms;
+// using System.Windows.Forms;
 using System.Windows.Documents;
 using StrategyManagerSolution.DiagramMisc;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
+using System.Windows.Controls;
 
 namespace StrategyManagerSolution.ViewModels.Diagram
 {
-	internal class StartViewModel:ViewModelBase, IDragSource, IHasPosition, ISelectable
+	internal class StartViewModel:ViewModelBase, IDragSource, IDiagramItem, ISelectable
 	{
 		public StartView View { get;set; }
 		private StartModel _startModel;
+		//接口
+		public UserControl ViewRef => View;
+
+		public DiagramElementModel ModelRef => _startModel;
+
+
 		public MoveAdorner MoveAdorner { get; set; }
 		public Command LoadedCommand { get; }
 		public event Action<ViewModelBase>? PositionChanged;
@@ -42,7 +49,8 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public Brush BackgroundColor { get; set; } = Brushes.LightBlue;
 		public bool IsSelected { get; set; } = false;
 		public Command ClickCommand { get; }
-		
+
+		public event Action<ViewModelBase>? Destroy;
 		public StartViewModel(StartView startView, StartModel startModel)
 		{
 			View = startView;
@@ -63,7 +71,14 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			e.Handled = true;
 			IsSelected = true;
 		}
-
+		public void OnKeyDown(KeyEventArgs e)
+		{
+			if (IsSelected && e.Key == Key.Delete)
+			{
+				Destroy?.Invoke(this);
+				IsSelected = false;
+			}
+		}
 		private void OnDrag()
 		{
 			PositionChanged?.Invoke(this);

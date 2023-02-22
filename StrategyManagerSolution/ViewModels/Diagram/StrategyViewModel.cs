@@ -129,10 +129,10 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		}
 
 		public event Action<StrategyViewModel, object>? Dropped;//second arg: dropeventargs
-		public event Action<object?>? DeleteChild;
+		public event Action<StrategyViewModel>? Destroy;
 		public void OnDrop(object? obj)
 		{
-			Dropped?.Invoke(this, obj);
+			Dropped?.Invoke(this, obj!);
 		}
 		public void OnDeselect(object? obj)
 		{
@@ -154,7 +154,8 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			KeyDown?.Invoke(e);
 			if (e.Key == Key.Delete && IsSelected)
 			{
-				DeleteChild?.Invoke(this);
+				Destroy?.Invoke(this);
+				IsSelected = false;
 			}
 		}
 		void OnMouseEnter(object? obj)

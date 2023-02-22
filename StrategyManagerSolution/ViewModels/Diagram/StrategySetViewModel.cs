@@ -22,11 +22,14 @@ using Contracts.MVVMModels;
 
 namespace StrategyManagerSolution.ViewModels
 {
-	internal class StrategySetViewModel : ViewModelBase, ISelectable, IDragDestination, IHasPosition
+	internal class StrategySetViewModel : ViewModelBase, ISelectable, IDragDestination, IDiagramItem
 	{
 		public MoveAdorner MoveAdorner { get; set; }
 		public StrategySetView View { get; set; }
 		private StrategySetModel _strategySetModel;
+		//接口
+		public UserControl ViewRef => View;
+		public DiagramElementModel ModelRef => _strategySetModel;
 		public DiagramElementModel DestinationModel => _strategySetModel;
 		public ConnectionLine? Line { get; set; }
 		public bool DraggingLine { get; set; }
@@ -99,7 +102,7 @@ namespace StrategyManagerSolution.ViewModels
 		public event Action<IDragSource>? DragStarted;
 		public event Action<IDragDestination>? DragEnded;
 		public event Action<ViewModelBase>? PositionChanged;
-
+		public event Action<ViewModelBase>? Destroy;
 		public StrategySetViewModel(StrategySetView view, StrategySetModel strategySetModel)
 		{
 			View = view;
@@ -167,7 +170,7 @@ namespace StrategyManagerSolution.ViewModels
 			strategyView.DataContext = strategyViewModel;
 			strategyViewModel.Dropped += OnChildDrop;
 			strategyViewModel.DragStarted += OnDragStarted;
-			strategyViewModel.DeleteChild += OnDeleteChild;
+			strategyViewModel.Destroy += OnDeleteChild;
 			PositionChanged += strategyViewModel.OnPositionChanged;
 			StrategyViews.Insert(index, strategyView);
 			StrategyViewModels.Insert(index, strategyViewModel);
@@ -220,11 +223,18 @@ namespace StrategyManagerSolution.ViewModels
 		}
 		public void OnKeyDown(KeyEventArgs e)
 		{
-			KeyDown?.Invoke(e);
+			if (IsSelected && e.Key == Key.Delete)
+			{
+				Destroy?.Invoke(this);
+				IsSelected = false;
+			}
+			else
+			{
+				KeyDown?.Invoke(e);
+			}
 		}
-		public void OnDeleteChild(object? obj)
+		public void OnDeleteChild(StrategyViewModel strategyViewModel)
 		{
-			StrategyViewModel strategyViewModel = (obj as StrategyViewModel)!;
 			int index = StrategyViewModels.FindIndex(x => x == strategyViewModel);
 			if (index != -1)
 			{

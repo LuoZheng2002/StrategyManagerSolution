@@ -8,6 +8,7 @@ using StrategyManagerSolution.Views.Diagram;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -92,16 +93,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             {
                 if (diagramItemModel is StartModel)
                 {
-                    StartView startView = new StartView();
-                    StartViewModel startViewModel = new StartViewModel(startView, (StartModel)diagramItemModel);
-                    startView.DataContext = startViewModel;
-                    startViewModel.PositionChanged += OnDiagramItemPositionChanged;
-                    CanvasClicked += startViewModel.OnDeselect;
-
-                    DiagramItems.Add(startView);
-                    DiagramItemViewModels.Add(startViewModel);
-                    Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
-                    Canvas.SetTop(startView, startViewModel.CanvasPos.Y);
+                    
                 }
                 else
                 {
@@ -127,66 +119,28 @@ namespace StrategyManagerSolution.ViewModels.Diagram
         {
             DragEventArgs e = (obj as DragEventArgs)!;
             DisplayTileViewModel displayTile = (e.Data.GetData(typeof(DisplayTileViewModel)) as DisplayTileViewModel)!;
-            if (displayTile != null)
+            if (displayTile == null)
+                return;
+            if (Canvas == null)
             {
-                if (Canvas != null)
-                {
-                    Point pos = e.GetPosition(Canvas);
-                    switch(displayTile.Text)
-                    {
-                        case "Start":
-                            {
-                                StartModel startModel = new StartModel(pos);
-                                StartView startView = new StartView();
-                                StartViewModel startViewModel = new StartViewModel(startView, startModel);
-                                startView.DataContext=startViewModel;
-                                CanvasClicked += startViewModel.OnDeselect;
+				Console.WriteLine("The item doesn't drop on canvas!");
+				HintText = "The item doesn't drop on canvas!";
+				OnPropertyChanged(nameof(HintText));
+                return;
+			}
+            Point pos = e.GetPosition(Canvas);
+            switch(displayTile.Text)
+            {
+                case "Start":
+                    CreateStartView(pos);
+					break;
+                case "HS":
+                    CreateStrategySetView(pos, StrategySetType.Hierarchical);
+                    break;
+                case "PS":
+                    CreateStrategySetView(pos, StrategySetType.Parallel);
+                    break;
 
-								DiagramItems.Add(startView);
-                                DiagramItemViewModels.Add(startViewModel);
-								_model.CurrentSolutionModel!.DiagramItemModels.Add(startModel);
-                                
-
-								Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
-                                Canvas.SetTop(startView, startViewModel.CanvasPos.Y);
-								break;
-							}
-                        default:
-                            {
-                                StrategySetModel strategySetModel = new StrategySetModel("name", StrategySetType.Hierarchical, pos);
-                                StrategySetView strategySetView = new StrategySetView();
-                                StrategySetViewModel strategySetViewModel = new StrategySetViewModel(strategySetView, strategySetModel);
-                                // 属性注册
-                                strategySetViewModel.Text = "Strategy Set Name Here!";
-                                strategySetViewModel.ImageName = "../../../Images/114514.jpeg";
-                                // 拖动连接提醒
-                                strategySetViewModel.DragStarted += OnDragStarted;
-                                strategySetViewModel.DragEnded += OnDragEnded;
-                                // 外部消息注册
-                                CanvasClicked += strategySetViewModel.OnCanvasClicked;
-                                KeyDown += strategySetViewModel.OnKeyDown;
-                                DragLineStarted += strategySetViewModel.OnDragLineStarted;
-                                DragLineEnded += strategySetViewModel.OnDragLineEnded;
-                                // 连接上下文
-                                strategySetView.DataContext= strategySetViewModel;
-                                // 装入容器
-                                DiagramItems.Add(strategySetView);
-                                DiagramItemViewModels.Add(strategySetViewModel);
-                                _model.CurrentSolutionModel!.DiagramItemModels.Add(strategySetModel);
-                                strategySetModel.Destroy += _model.CurrentSolutionModel!.OnDiagramItemDestroy;
-
-                                Canvas.SetLeft(strategySetView, strategySetViewModel.CanvasPos.X);
-                                Canvas.SetTop(strategySetView, strategySetViewModel.CanvasPos.Y);
-                                break;
-                            }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("The item doesn't drop on canvas!");
-                    HintText = "The item doesn't drop on canvas!";
-                    OnPropertyChanged(nameof(HintText));
-				}
             }
         }
         //用于撤销选中
@@ -271,13 +225,50 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             line.DragDestination.PositionChanged -= OnConnectedItemPositionChanged;
             DiagramItems.Remove(line.Line);
         }
+        void OnDiagramItemDestroy(ViewModelBase diagramItem)
+        {
+            if (diagramItem is IDragSource)
+            {
+                IDragSource dragSource = (IDragSource)diagramItem;
+                if (dragSource.LineLeaving != null)
+                {
+                    // remove line by invoking its destruction so that connection is thoroughly destroyed
+                    dragSource.LineLeaving.OnDestroy();
+                }
+            }
+            if (diagramItem is IDragDestination)
+            {
+                IDragDestination dragDestination = (IDragDestination)diagramItem;
+                if (dragDestination.LineEntering !=null)
+                {
+                    dragDestination.LineEntering.OnDestroy();
+                }
+            }
+            Debug.Assert(diagramItem is IDiagramItem);
+            IDiagramItem dItem = (IDiagramItem)diagramItem;
+            if (!DiagramItemViewModels.Contains(diagramItem))
+            {
+                throw new Exception("Cannot find view model in container");
+            }
+            if (!DiagramItems.Contains(dItem.ViewRef))
+            {
+                throw new Exception("Cannot find view in container");
+            }
+            if (!_model.CurrentSolutionModel!.DiagramItemModels.Contains(dItem.ModelRef))
+            {
+                throw new Exception("Cannot find model in container");
+            }
+            DiagramItemViewModels.Remove(diagramItem);
+            DiagramItems.Remove(dItem.ViewRef);
+            _model.CurrentSolutionModel!.DiagramItemModels.Remove(dItem.ModelRef);
+        }
         void OnDiagramItemPositionChanged(ViewModelBase diagramItem)
         {
-            if (diagramItem is IHasPosition)
+            if (diagramItem is IDiagramItem)
             {
-                IHasPosition hasPosition = (IHasPosition)diagramItem;
-                Point pos = hasPosition.PositionView.TranslatePoint(new Point(0, 0), Canvas);
-                hasPosition.CanvasPos = pos;
+                IDiagramItem dItem = (IDiagramItem)diagramItem;
+                Point pos = dItem.ViewRef.TranslatePoint(new Point(0, 0), Canvas);
+				dItem.CanvasPos = pos;
             }
         }
         void OnConnectedItemPositionChanged(ViewModelBase connectedItem)
@@ -312,5 +303,71 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             RoutedEventArgs e = (obj as RoutedEventArgs)!;
             Canvas = e.Source as Canvas;
         }
+        private void CreateStartView(Point pos)
+        {
+			StartModel startModel = new StartModel(pos);
+			StartView startView = new StartView();
+			StartViewModel startViewModel = new StartViewModel(startView, startModel);
+            //连接上下文
+			startView.DataContext = startViewModel;
+			//外部事件
+			CanvasClicked += startViewModel.OnDeselect;
+			KeyDown += startViewModel.OnKeyDown;
+			//内部事件
+			startViewModel.Destroy += OnDiagramItemDestroy;
+			//三重添加
+			DiagramItems.Add(startView);
+			DiagramItemViewModels.Add(startViewModel);
+			_model.CurrentSolutionModel!.DiagramItemModels.Add(startModel);
+			//调整位置
+			Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
+			Canvas.SetTop(startView, startViewModel.CanvasPos.Y);
+		}
+        private void CreateStrategySetView(Point pos, StrategySetType type)
+        {
+			StrategySetModel strategySetModel = new StrategySetModel("name", type, pos);
+			StrategySetView strategySetView = new StrategySetView();
+			StrategySetViewModel strategySetViewModel = new StrategySetViewModel(strategySetView, strategySetModel);
+			// 连接上下文
+			strategySetView.DataContext = strategySetViewModel;
+			// 属性注册
+			strategySetViewModel.Text = $"A {(type == StrategySetType.Hierarchical? "Hierarchical":"Parallel")} Strategy Set";
+			strategySetViewModel.ImageName = "../../../Images/114514.jpeg";
+			// 外部事件
+			CanvasClicked += strategySetViewModel.OnCanvasClicked;
+			KeyDown += strategySetViewModel.OnKeyDown;
+			DragLineStarted += strategySetViewModel.OnDragLineStarted;
+			DragLineEnded += strategySetViewModel.OnDragLineEnded;
+			// 内部事件
+			strategySetViewModel.DragStarted += OnDragStarted;
+			strategySetViewModel.DragEnded += OnDragEnded;
+            strategySetViewModel.Destroy += OnDiagramItemDestroy;
+			// 三重添加
+			DiagramItems.Add(strategySetView);
+			DiagramItemViewModels.Add(strategySetViewModel);
+			_model.CurrentSolutionModel!.DiagramItemModels.Add(strategySetModel);
+            // 调整位置
+			Canvas.SetLeft(strategySetView, strategySetViewModel.CanvasPos.X);
+			Canvas.SetTop(strategySetView, strategySetViewModel.CanvasPos.Y);
+		}
+        private void LoadStartView(StartModel startModel)
+        {
+			StartView startView = new StartView();
+			StartViewModel startViewModel = new StartViewModel(startView, startModel);
+            //连接上下文
+			startView.DataContext = startViewModel;
+			//外部事件
+			CanvasClicked += startViewModel.OnDeselect;
+			KeyDown += startViewModel.OnKeyDown;
+			//内部事件
+			startViewModel.PositionChanged += OnDiagramItemPositionChanged;
+			startViewModel.Destroy += OnDiagramItemDestroy;
+            //双重添加
+			DiagramItems.Add(startView);
+			DiagramItemViewModels.Add(startViewModel);
+            //调整位置
+			Canvas.SetLeft(startView, startViewModel.CanvasPos.X);
+			Canvas.SetTop(startView, startViewModel.CanvasPos.Y);
+		}
     }
 }
