@@ -10,11 +10,18 @@
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadedCommand}" PassEventArgsToCommand="True"/>
         </i:EventTrigger>
+        
     </i:Interaction.Triggers>
-    <Grid Background="{Binding BackgroundColor}">
+    <Grid Name="Grid" Background="{Binding BackgroundColor}">
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="MouseDown">
                 <i:InvokeCommandAction Command="{Binding ClickCommand}" PassEventArgsToCommand="True"/>
+            </i:EventTrigger>
+            <i:EventTrigger EventName="MouseEnter">
+                <i:InvokeCommandAction Command="{Binding MouseEnterCommand}" PassEventArgsToCommand="True"/>
+            </i:EventTrigger>
+            <i:EventTrigger EventName="MouseLeave">
+                <i:InvokeCommandAction Command="{Binding MouseLeaveCommand}" PassEventArgsToCommand="True"/>
             </i:EventTrigger>
         </i:Interaction.Triggers>
         <Grid.ColumnDefinitions>

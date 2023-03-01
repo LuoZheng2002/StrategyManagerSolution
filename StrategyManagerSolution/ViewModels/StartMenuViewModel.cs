@@ -47,7 +47,6 @@ namespace StrategyManagerSolution.ViewModels
 			bool? selected = openFileDialog.ShowDialog();
 			if (selected == true)
 			{
-				MessageBox.Show(openFileDialog.FileName, "File Selected:");
 				_model.OpenProject(openFileDialog.FileName);
 				NavigateToDiagram?.Invoke();
 			}

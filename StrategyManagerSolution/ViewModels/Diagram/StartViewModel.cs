@@ -27,42 +27,122 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 
 		public DiagramElementModel ModelRef => _startModel;
 
-
+		private NodeAdorner _nodeAdorner;
 		public MoveAdorner MoveAdorner { get; set; }
 		public Command LoadedCommand { get; }
+		public Command MouseEnterCommand { get; }
+		public Command MouseLeaveCommand { get; }
 		public event Action<ViewModelBase>? PositionChanged;
 		public Point CanvasPos
 		{
 			get { return _startModel.CanvasPos; }
 			set { _startModel.CanvasPos = value; }
 		}
-
+		public DiagramElementModel? ModelLinkingTo
+		{
+			get { return _startModel.LinkingTo; }
+			set { _startModel.LinkingTo = value; }
+		}
 		public FrameworkElement DragSourceView => View;
 
 		public ConnectionLine? LineLeaving { get; set; }
-		public IDragDestination? LinkingTo { get; set; }
+		private IDragDestination? _linkingTo;
+		public IDragDestination? LinkingTo
+		{
+			get { return _linkingTo; }
+			set
+			{
+				if (value == null)
+				{
+					_linkingTo = null;
+					_startModel.LinkingTo = null;
+				}
+				else
+				{
+					_linkingTo = value;
+					_startModel.LinkingTo = _linkingTo.DestinationModel;
+				}
+			}
+		}
 
-		public Point Offset { get; } = new Point(0, 0);
+		public Point Offset { get; } = new Point(160, 35);
 
 		public FrameworkElement PositionView => View;
+		public Grid Grid => View.Grid;
 		public ImageSource ImageSource { get; set; }
 		public Brush BackgroundColor { get; set; } = Brushes.LightBlue;
 		public bool IsSelected { get; set; } = false;
 		public Command ClickCommand { get; }
 
 		public event Action<ViewModelBase>? Destroy;
+		public event Action<IDragSource>? DragStarted;
 		public StartViewModel(StartView startView, StartModel startModel)
 		{
 			View = startView;
 			_startModel = startModel;
-			MoveAdorner = new MoveAdorner(View,70,70);
+			MoveAdorner = new MoveAdorner(View, 10, 10, 50,50);
 			MoveAdorner.Drag += OnDrag;
-			LoadedCommand = new(OnLoaded);
+			
 			ImageSource = new BitmapImage(new Uri("../../../Images/Start.jpg", UriKind.Relative));
 			double a = ImageSource.Width;
 			ClickCommand = new Command(OnSelect);
+			LoadedCommand = new(OnLoaded);
+			MouseEnterCommand = new(OnMouseEnter);
+			MouseLeaveCommand = new(OnMouseLeave);
+			_nodeAdorner = new NodeAdorner(Grid);
+			_nodeAdorner.MouseLeave += OnMouseLeaveNodeAdorner;
+			_nodeAdorner.DragStarted += OnDragStarted;
 		}
 
+		private void OnDragStarted(FrameworkElement obj)
+		{
+			DragStarted?.Invoke(this);
+		}
+
+		private void OnMouseLeaveNodeAdorner(object sender, MouseEventArgs e)
+		{
+			if (!MouseInView(e))
+			{
+				HideNodeAdorner();
+			}
+		}
+
+		private bool MouseInView(MouseEventArgs e)
+		{
+			Point pos = e.GetPosition(Grid);
+			return (pos.X >= 0 && pos.Y >= 0 && pos.X <= Grid.ActualWidth && pos.Y <= Grid.ActualHeight);
+		}
+
+		void ShowNodeAdorner()
+		{
+			AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(Grid);
+			Adorner[] adorners = adornerLayer.GetAdorners(Grid);
+			if (adorners == null || !adorners.Contains(_nodeAdorner))
+			{
+				adornerLayer.Add(_nodeAdorner);
+			}
+			else
+			{
+				Console.WriteLine("Attempt to add another node adorner.");
+			}
+		}
+		void HideNodeAdorner()
+		{
+			AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(Grid);
+			Adorner[] adorners = adornerLayer.GetAdorners(Grid);
+			if (adorners == null)
+			{
+				Console.WriteLine("There is no adorners.");
+			}
+			else if (adorners.Contains(_nodeAdorner))
+			{
+				adornerLayer.Remove(_nodeAdorner);
+			}
+			else
+			{
+				Console.WriteLine("Attempt to remove node adorner twice.");
+			}
+		}
 		private void OnSelect(object? obj)
 		{
 			BackgroundColor = Brushes.Green;
@@ -111,6 +191,19 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		{
 			LineLeaving = null;
 			LinkingTo = null;
+		}
+
+		void OnMouseEnter(object? obj)
+		{
+			ShowNodeAdorner();
+		}
+		void OnMouseLeave(object? obj)
+		{
+			MouseEventArgs e = (obj as MouseEventArgs)!;
+			if (!MouseInView(e))
+			{
+				HideNodeAdorner();
+			}
 		}
 	}
 }

@@ -5,7 +5,6 @@ using StrategyManagerSolution.MVVMUtils;
 using StrategyManagerSolution.Views.Diagram;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,51 +13,56 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
 namespace StrategyManagerSolution.ViewModels.Diagram
 {
-	internal class StrategyViewModel : ViewModelBase, ISelectable, IDragSource
+	internal class CaseViewModel:ViewModelBase, ISelectable, IDragSource
 	{
-		private readonly NodeAdorner _nodeAdorner;
-		private readonly PosAdorner _posAdorner;
-		public StrategyView View { get;}
-		private StrategyModel _strategyModel;
-		public StrategyModel StrategyModel=>_strategyModel;
-		public bool IsSelected { get; set; } = false;
-		public string Text
-		{
-			get { return StrategyModel.StrategyName; }
-			set { StrategyModel.StrategyName = value; }
-		}
-		public Brush Background { get; set; } = Brushes.AliceBlue;
-		public Command DropCommand { get; }
-		public Command SelectCommand { get; }
-		public Command MouseEnterCommand { get; }
-		public Command MouseLeaveCommand { get; }
-		
-		public TextBlock TextBlock => View.TextBlock;
+		private NodeAdorner _nodeAdorner;
+		private PosAdorner _posAdorner;
+		public CaseView View { get; }
+		private CaseModel _caseModel;
+		public CaseModel CaseModel => _caseModel;
 		public FrameworkElement DragSourceView => View;
+		public TextBlock TextBlock => View.TextBlock;
+		public Brush Background { get; set; } = Brushes.AliceBlue;
+		public bool IsSelected { get; set; }
 		public ConnectionLine? LineLeaving { get; set; }
 		public IDragDestination? LinkingTo { get; set; }
 		public DiagramElementModel? ModelLinkingTo
 		{
-			get { return _strategyModel.LinkingTo; }
-			set { _strategyModel.LinkingTo = value; }
+			get { return _caseModel.LinkingTo; }
+			set { _caseModel.LinkingTo = value; }
 		}
-		public Point Offset { get; } = new Point(200,15);
+		public string CaseName
+		{
+			get { return _caseModel.CaseName; }
+			set { _caseModel.CaseName = value;}
+		}
+		public string CaseText
+		{
+			get { return _caseModel.CaseText; }
+			set { _caseModel.CaseText = value; }
+		}
+		public Point Offset => new Point(View.ActualWidth, View.ActualHeight/2);
+		public Brush TextColor { get; set; } = Brushes.LightBlue;
+		public Command SelectCommand { get; }
+		public Command MouseEnterCommand { get; }
+		public Command MouseLeaveCommand { get; }
 
 		public event Action? CanvasClicked;
-		public event Action<KeyEventArgs>? KeyDown;
 		public event Action<IDragSource>? DragStarted;
 		public event Action<ViewModelBase>? PositionChanged;
-		public StrategyViewModel(StrategyView view, StrategyModel strategyModel)
+		public event Action<CaseViewModel>? Destroy;
+		public event Action<CaseViewModel>? UpperClicked;
+		public event Action<CaseViewModel>? LowerClicked;
+		public CaseViewModel(CaseView view, CaseModel caseModel)
 		{
 			View = view;
-			_strategyModel = strategyModel;
-			DropCommand = new Command(OnDrop);
+			_caseModel = caseModel;
 			SelectCommand = new Command(OnSelect);
-			MouseEnterCommand= new Command(OnMouseEnter);
+			MouseEnterCommand = new Command(OnMouseEnter);
 			MouseLeaveCommand = new Command(OnMouseLeave);
 			_nodeAdorner = new NodeAdorner(TextBlock);
 			_nodeAdorner.MouseLeave += OnMouseLeaveAdorner;
@@ -68,9 +72,23 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			_posAdorner.UpperClicked += OnUpperClicked;
 			_posAdorner.LowerClicked += OnLowerClicked;
 		}
+		private void OnUpperClicked()
+		{
+			UpperClicked?.Invoke(this);
+		}
+		private void OnLowerClicked()
+		{
+			LowerClicked?.Invoke(this);
+		}
 
-		
-
+		public void OnKeyDown(KeyEventArgs e)
+		{
+			if (IsSelected && e.Key == Key.Delete)
+			{
+				Destroy?.Invoke(this);
+				IsSelected = false;
+			}
+		}
 		void OnDragStarted(FrameworkElement dragSource)
 		{
 			DragStarted?.Invoke(this);
@@ -83,41 +101,24 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			}
 		}
 
-		public event Action<StrategyViewModel, object>? Dropped;//second arg: dropeventargs
-		public event Action<StrategyViewModel>? Destroy;
-		public event Action<StrategyViewModel>? UpperClicked;
-		public event Action<StrategyViewModel>? LowerClicked;
-		public void OnDrop(object? obj)
-		{
-			Dropped?.Invoke(this, obj!);
-		}
 		public void OnDeselect(object? obj)
 		{
 			IsSelected = false;
-			Background = Brushes.AliceBlue;
-			OnPropertyChanged(nameof(Background));
+			TextColor = Brushes.AliceBlue;
+			OnPropertyChanged(nameof(TextColor));
 		}
 		public void OnSelect(object? obj)
 		{
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
 			IsSelected = true;
-			Background = Brushes.LightGreen;
-			OnPropertyChanged(nameof(Background));
+			TextColor = Brushes.LightGreen;
+			OnPropertyChanged(nameof(TextColor));
 		}
 		public void OnCanvasClicked()
 		{
 			CanvasClicked?.Invoke();
 			OnDeselect(null);
-		}
-		public void OnKeyDown(KeyEventArgs e)
-		{
-			KeyDown?.Invoke(e);
-			if (e.Key == Key.Delete && IsSelected)
-			{
-				Destroy?.Invoke(this);
-				IsSelected = false;
-			}
 		}
 		void OnMouseEnter(object? obj)
 		{
@@ -168,27 +169,20 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 				Console.WriteLine("Attempt to remove node adorner twice.");
 			}
 		}
-		~StrategyViewModel()
+		~CaseViewModel()
 		{
-			Console.WriteLine("Strategy Destructed!");
+			Console.WriteLine("Case Destructed!");
 		}
 
 		public void OnLineLeavingDestroyed(ConnectionLine line)
 		{
 			LineLeaving = null;
 			LinkingTo = null;
+			ModelLinkingTo = null;
 		}
 		public void OnPositionChanged(ViewModelBase viewModelBase)
 		{
 			PositionChanged?.Invoke(this);
-		}
-		private void OnUpperClicked()
-		{
-			UpperClicked?.Invoke(this);
-		}
-		private void OnLowerClicked() 
-		{
-			LowerClicked?.Invoke(this);
 		}
 	}
 }

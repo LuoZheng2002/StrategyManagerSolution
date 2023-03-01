@@ -1,9 +1,9 @@
-﻿<UserControl x:Class="StrategyManagerSolution.Views.Diagram.StrategySetView"
+﻿<UserControl x:Class="StrategyManagerSolution.Views.Diagram.SwitchView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:StrategyManagerSolution"
+             xmlns:local="clr-namespace:StrategyManagerSolution.Views.Diagram"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d">
     <i:Interaction.Triggers>
@@ -21,20 +21,19 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Border BorderBrush="{Binding BackgroundColor}" BorderThickness="5">
-        
-        <Grid Width="200" Background="White">
+        <Grid Background="DarkGray">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0">
+            <Grid Grid.Row="0" Margin="0 0 0 10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Image Grid.Column="0" Source="{Binding Image}" Width="30" Height="30" AllowDrop="False"/>
-                <TextBlock Grid.Column="1" Text="{Binding Text}" Background="{Binding TextColor}" AllowDrop="False" Width="170">
+                <Image Grid.Column="0" Source="{Binding ImageSource}" Width="30" Height="30"/>
+                <TextBlock Grid.Column="1" Background="{Binding TextColor}" Text="{Binding SwitchTargetText}" FontSize="15" MinWidth="200">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseLeftButtonDown">
                             <i:InvokeCommandAction Command="{Binding SelectCommand}" PassEventArgsToCommand="True"/>
@@ -42,20 +41,14 @@
                     </i:Interaction.Triggers>
                 </TextBlock>
             </Grid>
-            <Rectangle Grid.Row="1" Height="10" Fill="Gray" AllowDrop="True">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="Drop">
-                        <i:InvokeCommandAction Command="{Binding DropCommand}" PassEventArgsToCommand="True"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Rectangle>
-            <ItemsControl Grid.Row="2" ItemsSource="{Binding StrategyViews}">
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding CaseViews}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
+            <Button Grid.Row="2" Content="添加Case" FontSize="15" Height="20" Command="{Binding AddCaseCommand}" Background="AliceBlue"/>
         </Grid>
     </Border>
 </UserControl>

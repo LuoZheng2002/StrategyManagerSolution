@@ -18,11 +18,15 @@ namespace StrategyManagerSolution.Adorners
         public Thumb thumb;
         public int ThumbWidth { get; set; }
         public int ThumbHeight { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
         public event Action? Drag;
-        public MoveAdorner(UIElement adornedElement, int width, int height) : base(adornedElement)
+        public MoveAdorner(UIElement adornedElement, int x, int y,int width, int height) : base(adornedElement)
         {
             ThumbWidth = width;
             ThumbHeight = height;
+            X = x;
+            Y = y;
             AdornerVisuals = new VisualCollection(this);
             thumb = new Thumb() { Background = Brushes.Transparent, Height = ThumbHeight, Width = ThumbWidth };
             thumb.DragDelta += Thumb_DragDelta;
@@ -44,7 +48,7 @@ namespace StrategyManagerSolution.Adorners
         }
         protected override Size ArrangeOverride(Size finalSize)
         {
-            thumb.Arrange(new Rect(0, 0, ThumbWidth, ThumbHeight));
+            thumb.Arrange(new Rect(X, Y, ThumbWidth, ThumbHeight));
             return base.ArrangeOverride(finalSize);
         }
         protected override int VisualChildrenCount => AdornerVisuals.Count;

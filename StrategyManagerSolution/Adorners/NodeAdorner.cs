@@ -39,7 +39,7 @@ namespace StrategyManagerSolution.Adorners
 		}
 		protected override Size ArrangeOverride(Size finalSize)
 		{
-			_rectangle.Arrange(new Rect(AdornedElement.DesiredSize.Width - WIDTH / 2, (AdornedElement.DesiredSize.Height - HEIGHT) / 2, WIDTH, HEIGHT));
+			_rectangle.Arrange(new Rect(AdornedElement.RenderSize.Width - WIDTH / 2, (AdornedElement.RenderSize.Height - HEIGHT) / 2, WIDTH, HEIGHT));
 			return base.ArrangeOverride(finalSize);
 		}
 		protected override int VisualChildrenCount => AdornerVisuals.Count;

@@ -52,12 +52,8 @@ namespace StrategyManagerSolution.Models
 			string projectFolder = location + "/" + projectName;
 			string projectDirectory = projectFolder + "/" + projectName + ".smproj";
 			CurrentProjectModel = new ProjectModel(projectName, projectFolder, projectDirectory, visualStudioSolutionName);
-			Directory.CreateDirectory(projectFolder);
-			CurrentProjectModel.SolutionNames.Add("main");
-			CurrentProjectModel.SolutionNames.Add("test");
-			Serializer.Serialize(projectFolder + "/" + CurrentProjectModel.SolutionNames[0] + ".smsln", new SolutionModel("main"));
-			Serializer.Serialize(projectFolder + "/" + CurrentProjectModel.SolutionNames[1] + ".smsln", new SolutionModel("test"));
-			Serializer.Serialize(projectDirectory, CurrentProjectModel);
+			CurrentProjectModel.Initialize();
+			CurrentProjectModel.AddSolution("main");
 			CurrentSolutionModel = Serializer.Deserialize<SolutionModel>(projectFolder + "/main.smsln");
 		}
 		public void SaveCurrentSolution()

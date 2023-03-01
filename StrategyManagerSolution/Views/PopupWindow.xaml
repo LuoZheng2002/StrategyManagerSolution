@@ -1,0 +1,40 @@
+﻿<Window x:Class="StrategyManagerSolution.Views.PopupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StrategyManagerSolution.Views"
+        xmlns:fvms="clr-namespace:StrategyManagerSolution.ViewModels.Form"
+        xmlns:fviews="clr-namespace:StrategyManagerSolution.Views.Form"
+        mc:Ignorable="d"
+        Title="PopupWindow" Height="300" Width="400">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type fvms:StrategySetConfigViewModel}">
+            <fviews:StrategySetConfig/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fvms:IfConfigViewModel}">
+            <fviews:IfConfig/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fvms:SwitchConfigViewModel}">
+            <fviews:SwitchConfig/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fvms:CaseConfigViewModel}">
+            <fviews:CaseConfig/>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <ContentControl Grid.Row="0" Content="{Binding Content}"/>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="确定" Command="{Binding OKCommand}" Width="80" Height="30" HorizontalAlignment="Right" Margin="0 0 20 0"/>
+            <Button Grid.Column="1" Content="取消" Command="{Binding CancelCommand}" Width="80" Height="30" HorizontalAlignment="Left" Margin="20 0 0 0"/>
+        </Grid>
+    </Grid>
+</Window>

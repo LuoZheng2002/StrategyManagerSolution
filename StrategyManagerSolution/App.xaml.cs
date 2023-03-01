@@ -19,7 +19,7 @@ namespace StrategyManagerSolution
 		{
 			_model = new Model();
 			_mainWindow= new MainWindow();
-			_mainWindow.DataContext = new MainViewModel(_model);
+			_mainWindow.DataContext = new MainViewModel(_model,_mainWindow);
 			_mainWindow.Show();
 		}
 	}

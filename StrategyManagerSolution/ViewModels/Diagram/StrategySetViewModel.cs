@@ -19,6 +19,7 @@ using StrategyManagerSolution.Views.Diagram;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.ViewModels.Diagram;
 using Contracts.MVVMModels;
+using Contracts.Enums;
 
 namespace StrategyManagerSolution.ViewModels
 {
@@ -29,54 +30,34 @@ namespace StrategyManagerSolution.ViewModels
 		private StrategySetModel _strategySetModel;
 		//接口
 		public UserControl ViewRef => View;
+		public FrameworkElement DragDestinationView => View;
 		public DiagramElementModel ModelRef => _strategySetModel;
 		public DiagramElementModel DestinationModel => _strategySetModel;
 		public ConnectionLine? Line { get; set; }
 		public bool DraggingLine { get; set; }
 		private bool _isSelected;
-		public bool IsSelected
-		{
-			get { return _isSelected; }
-			set
-			{
-				if (_isSelected != value)
-				{
-					_isSelected = value;
-					if (_isSelected)
-					{
-						TextColor = Brushes.LightGreen;
-					}
-					else
-					{
-						TextColor = Brushes.AliceBlue;
-					}
-					OnPropertyChanged(nameof(TextColor));
-				}
-			}
-		}
+		public bool IsSelected { get; set; }
 		private int number = 0;
-		public ImageSource? Image { get; set; } = new BitmapImage(new Uri("../Images/114514.jpeg", UriKind.Relative));
+		public ImageSource Image { get; set; }
 		public Brush TextColor { get; set; } = Brushes.AliceBlue;
 		public Brush BackgroundColor { get; set; } = Brushes.AliceBlue;
-		
-		private string _imageName = "";
-		public string ImageName
+
+		public ConnectionLine? LineEntering { get; set; }
+		public IDragSource? LinkingFrom { get; set; }
+		public string Text
 		{
-			get { return _imageName; }
-			set
-			{
-				if (_imageName != value)
-				{
-					_imageName = value;
-					Image = new BitmapImage(new Uri(_imageName, UriKind.Relative));
-					double a = Image.Width;
-					OnPropertyChanged(nameof(Image));
-				}
-			}
+			get { return _strategySetModel.StrategySetName; }
+			set { _strategySetModel.StrategySetName = value; }
 		}
-		public string Text { get; set; } = "";
+		public Point Offset { get; } = new Point(0, 20);
+		public Point CanvasPos
+		{
+			get { return _strategySetModel.CanvasPos; }
+			set { _strategySetModel.CanvasPos = value; }
+		}
 		public ObservableCollection<StrategyView> StrategyViews { get; } = new();
 		public List<StrategyViewModel> StrategyViewModels { get; } = new();
+		// Commands
 		public Command DropCommand { get; }
 		public Command SelectCommand { get; }
 		public Command MouseLeftButtonUpCommand { get; }
@@ -84,19 +65,10 @@ namespace StrategyManagerSolution.ViewModels
 		public Command MouseEnterCommand { get; }
 		public Command MouseLeaveCommand { get; }
 
-		public FrameworkElement DragDestinationView => View;
+		
 
-		public ConnectionLine? LineEntering { get; set; }
-		public IDragSource? LinkingFrom { get; set; }
-		public Point Offset { get; } = new Point(0, 0);
-		public Point CanvasPos
-		{
-			get { return _strategySetModel.CanvasPos; }
-			set { _strategySetModel.CanvasPos = value; }
-		}
-
-		public FrameworkElement PositionView => throw new NotImplementedException();
-
+		
+		// Events
 		public event Action? CanvasClicked;
 		public event Action<KeyEventArgs>? KeyDown;
 		public event Action<IDragSource>? DragStarted;
@@ -107,6 +79,11 @@ namespace StrategyManagerSolution.ViewModels
 		{
 			View = view;
 			_strategySetModel = strategySetModel;
+			string imageName = _strategySetModel.Type == StrategySetType.Hierarchical ? "../../../Images/hierarchy.jpg" : "../../../Images/liberty.jpg";
+			Image = new BitmapImage(new Uri(imageName, UriKind.Relative));
+			//activate image using bug
+			double a = Image.Width;
+
 			DropCommand = new Command(OnDrop);
 			SelectCommand = new Command(OnSelect);
 			MouseLeftButtonUpCommand = new Command(OnMouseLeftButtonUp);
@@ -114,7 +91,7 @@ namespace StrategyManagerSolution.ViewModels
 			MouseEnterCommand = new Command(OnMouseEnter);
 			MouseLeaveCommand = new Command(OnMouseLeave);
 			
-			MoveAdorner = new MoveAdorner(view, 30, 30);
+			MoveAdorner = new MoveAdorner(view,0, 0, 30, 30);
 			MoveAdorner.Drag += OnDrag;
 		}
 
@@ -158,7 +135,7 @@ namespace StrategyManagerSolution.ViewModels
 				adornerLayer.Add(MoveAdorner);
 			}
 		}
-		void OnDragStarted(IDragSource dragSource)
+		public void OnDragStarted(IDragSource dragSource)
 		{
 			DragStarted?.Invoke(dragSource);
 		}
@@ -167,18 +144,23 @@ namespace StrategyManagerSolution.ViewModels
 			StrategyModel strategyModel = new StrategyModel("strategyName", "className");
 			StrategyView strategyView = new StrategyView();
 			StrategyViewModel strategyViewModel = new StrategyViewModel(strategyView, strategyModel);
+			//连接上下文
 			strategyView.DataContext = strategyViewModel;
+			//属性注册
+			strategyViewModel.Text = "Strategy " + number.ToString();
+			//内部事件
 			strategyViewModel.Dropped += OnChildDrop;
 			strategyViewModel.DragStarted += OnDragStarted;
 			strategyViewModel.Destroy += OnDeleteChild;
+			//外部事件
 			PositionChanged += strategyViewModel.OnPositionChanged;
+			KeyDown += strategyViewModel.OnKeyDown;
+			CanvasClicked += strategyViewModel.OnCanvasClicked;
+			//三重添加
 			StrategyViews.Insert(index, strategyView);
 			StrategyViewModels.Insert(index, strategyViewModel);
 			_strategySetModel.Strategies.Insert(index, strategyModel);
-			// strategyViewModel.SetUpDummyAdorner();
-			strategyViewModel.Text = "Strategy " + number.ToString();
-			CanvasClicked += strategyViewModel.OnCanvasClicked;
-			KeyDown += strategyViewModel.OnKeyDown;
+			
 			number++;
 		}
 
@@ -211,10 +193,14 @@ namespace StrategyManagerSolution.ViewModels
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
 			IsSelected = true;
+			TextColor = Brushes.LightGreen;
+			OnPropertyChanged(nameof(TextColor));
 		}
 		public void OnDeselect(object? obj)
 		{
 			IsSelected = false;
+			TextColor = Brushes.AliceBlue;
+			OnPropertyChanged(nameof(TextColor));
 		}
 		public void OnCanvasClicked()
 		{
@@ -225,6 +211,10 @@ namespace StrategyManagerSolution.ViewModels
 		{
 			if (IsSelected && e.Key == Key.Delete)
 			{
+				foreach(var strategyViewModel in StrategyViewModels)
+				{
+					Destroy?.Invoke(strategyViewModel);
+				}
 				Destroy?.Invoke(this);
 				IsSelected = false;
 			}
@@ -242,6 +232,7 @@ namespace StrategyManagerSolution.ViewModels
 				StrategyViewModels.RemoveAt(index);
 				StrategyViews.RemoveAt(index);
 				_strategySetModel.Strategies.RemoveAt(index);
+				Destroy?.Invoke(strategyViewModel);
 			}
 			else
 			{

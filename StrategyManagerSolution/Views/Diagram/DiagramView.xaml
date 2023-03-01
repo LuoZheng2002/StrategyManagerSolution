@@ -21,6 +21,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Text="{Binding ProjectName}" FontSize="20"/>
             <ScrollViewer Grid.Row="1">
@@ -32,6 +33,7 @@
                     </i:Interaction.Triggers>
                 </ListView>
             </ScrollViewer>
+            <Button Grid.Row="2" Content="新建文件" FontSize="20" Width="100" Height="30" HorizontalAlignment="Center" Margin="0 5 0 15" Command="{Binding CreateNewFileCommand}"/>
         </Grid>
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
         <Grid Grid.Column="2">
@@ -39,7 +41,15 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Text="{Binding SelectedFile}" FontSize="20"/>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding SelectedFile}" FontSize="20"/>
+                <Button Grid.Column="1" Content="删除文件" Command="{Binding DeleteFileCommand}" FontSize="20" Width="100"/>
+            </Grid>
+            
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
@@ -51,7 +61,7 @@
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
@@ -63,6 +73,8 @@
                     <views:DisplayTileView Grid.Row="1" Grid.Column="0" DataContext="{Binding DisplayTile2}"/>
                     <views:DisplayTileView Grid.Row="1" Grid.Column="1" DataContext="{Binding DisplayTile3}"/>
                     <views:DisplayTileView Grid.Row="2" Grid.Column="0" DataContext="{Binding DisplayTile4}"/>
+                    <views:DisplayTileView Grid.Row="2" Grid.Column="1" DataContext="{Binding DisplayTile5}"/>
+                    <views:DisplayTileView Grid.Row="3" Grid.Column="0" DataContext="{Binding DisplayTile6}"/>
                 </Grid>
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>

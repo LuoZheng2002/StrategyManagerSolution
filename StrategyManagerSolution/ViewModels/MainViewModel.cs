@@ -1,6 +1,7 @@
 ﻿using StrategyManagerSolution.Models;
 using StrategyManagerSolution.MVVMUtils;
 using StrategyManagerSolution.ViewModels.Diagram;
+using StrategyManagerSolution.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace StrategyManagerSolution.ViewModels
 	internal class MainViewModel : ViewModelBase
 	{
 		private Model _model;
+		private MainWindow _mainWindow;
 		private ViewModelBase? _currentViewModel;
 		public ViewModelBase? CurrentViewModel
 		{
@@ -30,7 +32,7 @@ namespace StrategyManagerSolution.ViewModels
 		public event Action<KeyEventArgs>? KeyDown;
 		public void NavigateToDiagram()
 		{
-			DiagramViewModel diagramViewModel = new DiagramViewModel(_model);
+			DiagramViewModel diagramViewModel = new DiagramViewModel(_model, _mainWindow);
 			KeyDown += diagramViewModel.OnKeyDown;
 			CurrentViewModel = diagramViewModel;
 		}
@@ -48,9 +50,10 @@ namespace StrategyManagerSolution.ViewModels
 			createProjectViewModel.NavigateToDiagram += NavigateToDiagram;
 			CurrentViewModel = createProjectViewModel;
 		}
-		public MainViewModel(Model model)
+		public MainViewModel(Model model, MainWindow mainWindow)
 		{
 			_model = model;
+			_mainWindow = mainWindow;
 			NavigateToStartMenu();
 			KeyDownCommand = new Command(OnKeyDown);
 		}
