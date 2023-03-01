@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="StrategyManagerSolution.Views.Form.SimulationConfig"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:StrategyManagerSolution.Views.Form"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="{Binding SimulationModuleNamePrompt}" FontSize="20" Margin="0 0 0 10"/>
+        <TextBox Grid.Row="1" Text="{Binding SimulationModuleName}" FontSize="20"/>
+        <TextBlock Grid.Row="2" Text="{Binding SimulationDescriptionPrompt}" FontSize="20" Margin="0 0 0 10"/>
+        <TextBox Grid.Row="3" Text="{Binding SimulationDescription}" FontSize="20"/>
+        <TextBlock Grid.Row="4" Text="{Binding SimulationModelClassNamePrompt}" FontSize="20" Margin="0 0 0 10"/>
+        <TextBox Grid.Row="5" Text="{Binding SimulationModelClassName}" FontSize="20"/>
+        <TextBlock Grid.Row="6" Text="{Binding Player1NamePrompt}" FontSize="20" Margin="0 0 0 10"/>
+        <TextBox Grid.Row="7" Text="{Binding Player1Name}" FontSize="20"/>
+        <TextBlock Grid.Row="8" Text="{Binding Player1SolutionNamePrompt}" FontSize="20" Margin="0 0 0 10"/>
+        <TextBox Grid.Row="9" Text="{Binding Player1SolutionName}" FontSize="20"/>
+        <TextBlock Grid.Row="10" Text="{Binding Player2NamePrompt}" FontSize="20" Margin="0 0 0 10"/>
+        <TextBox Grid.Row="11" Text="{Binding Player2Name}" FontSize="20"/>
+        <TextBlock Grid.Row="12" Text="{Binding Player2SolutionNamePrompt}" FontSize="20" Margin="0 0 0 10"/>
+        <TextBox Grid.Row="13" Text="{Binding Player2SolutionName}" FontSize="20"/>
+    </Grid>
+</UserControl>

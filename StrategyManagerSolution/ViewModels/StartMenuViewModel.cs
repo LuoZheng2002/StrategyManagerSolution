@@ -35,10 +35,14 @@ namespace StrategyManagerSolution.ViewModels
 		}
 		private void OnOpenRecent(object? obj)
 		{
+			Console.WriteLine("Open recent called.");
 			SelectionChangedEventArgs e = (SelectionChangedEventArgs)obj!;
+			if (e.AddedItems.Count == 0)
+				return;
 			RecentProjectViewModel recentProjectViewModel = (RecentProjectViewModel)e.AddedItems[0]!;
 			_model.OpenProject(recentProjectViewModel.Directory);
 			NavigateToDiagram?.Invoke();
+			e.Handled = true;
 		}
 		private void OnOpenProject(object? obj)
 		{

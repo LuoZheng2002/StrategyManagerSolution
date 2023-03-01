@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="StrategyManagerSolution.Views.Diagram.SimulationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:StrategyManagerSolution.Views.Diagram"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:dviews="clr-namespace:StrategyManagerSolution.Views.Diagram"
+             mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="MouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding MouseLeftButtonUpCommand}" PassEventArgsToCommand="True"/>
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedCommand}"/>
+        </i:EventTrigger>
+        <i:EventTrigger EventName="MouseEnter">
+            <i:InvokeCommandAction Command="{Binding MouseEnterCommand}"/>
+        </i:EventTrigger>
+        <i:EventTrigger EventName="MouseLeave">
+            <i:InvokeCommandAction Command="{Binding MouseLeaveCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Border BorderBrush="{Binding BackgroundColor}" BorderThickness="5">
+        <Grid Background="AliceBlue">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0 0 0 5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" Source="{Binding ImageSource}" Width="30" Height="30"/>
+                <TextBlock Grid.Column="1" Background="{Binding TextColor}" Text="{Binding SimulationDescription}" FontSize="15" MinWidth="200">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseLeftButtonDown">
+                            <i:InvokeCommandAction Command="{Binding SelectCommand}" PassEventArgsToCommand="True"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBlock>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Player1Name}" FontSize="20" TextAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="v.s." FontSize="20"/>
+                <TextBlock Grid.Column="2" Text="{Binding Player2Name}" FontSize="20" TextAlignment="Center"/>
+            </Grid>
+            <dviews:CaseView Grid.Row="2" x:Name="Player1WinsCase" DataContext="{Binding Player1WinsViewModel}"/>
+            <dviews:CaseView Grid.Row="3" x:Name="Player2WinsCase" DataContext="{Binding Player2WinsViewModel}"/>
+        </Grid>
+    </Border>
+</UserControl>

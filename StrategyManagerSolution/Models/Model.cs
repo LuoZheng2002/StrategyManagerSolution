@@ -11,34 +11,12 @@ namespace StrategyManagerSolution.Models
 {
 	internal class Model
 	{
-		private List<RecentProject>? _recentProjects;
-		public List<RecentProject> RecentProjects
-		{
-			get 
-			{ 
-				if (_recentProjects==null)
-				{
-					_recentProjects = GetRecentProjects();
-					return _recentProjects;
-				}
-				else
-					return _recentProjects;
-			}
-		}
+		public ProgramData ProgramData { get; set; }
+		public List<RecentProject> RecentProjects => ProgramData.RecentProjects;
 
 		public ProjectModel? CurrentProjectModel { get; set; }
 		// 当前选中的流程图文件
 		public SolutionModel? CurrentSolutionModel { get; set; }
-		private List<RecentProject> GetRecentProjects()
-		{
-			//to do
-			return new List<RecentProject>()
-			{
-				new RecentProject("a.smproj", "C:/a.smproj", new DateTime(2022,1,1)),
-				new RecentProject("b.smproj", "C:/b.smproj", new DateTime(2022,1,1)),
-				new RecentProject("c.smproj", "C:/c.smproj", new DateTime(2022,1,1)),
-			};
-		}
 		public void OpenProject(string directory)
 		{
 			CurrentProjectModel = Serializer.Deserialize<ProjectModel>(directory);
@@ -61,5 +39,13 @@ namespace StrategyManagerSolution.Models
 			string solutionDirectory = CurrentProjectModel!.ProjectFolder + "/" + CurrentSolutionModel!.SolutionFileName;
 			Serializer.Serialize(solutionDirectory, CurrentSolutionModel);
 		}
-	}
+		public void SaveProgramData()
+		{
+			Serializer.Serialize("../../../ProgramData.json", ProgramData);
+		}
+        public Model()
+        {
+			ProgramData = Serializer.Deserialize<ProgramData>("../../../ProgramData.json");
+        }
+    }
 }

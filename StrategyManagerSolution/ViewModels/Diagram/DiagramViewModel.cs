@@ -44,7 +44,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public string HintText { get; set; } = "Diagram operation hint messages here!";
         public ObservableCollection<string> ProjectFiles { get; set; } = new();
         public string ProjectName { get; set; } ="";
-        public string SelectedFile { get; set; }
+        public string SelectedFile { get; set; } = "未选择文件";
         public Command DropCommand { get; }
         public Command ClickCommand { get; }
         public Command MouseLeftButtonUpCommand { get; }
@@ -69,7 +69,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             DisplayTile3 = new DisplayTileViewModel() { Text = "等级策略集", ImageName = "../../../Images/hierarchy.jpg" };
             DisplayTile4 = new DisplayTileViewModel() { Text = "If模块", ImageName = "../../../Images/if.jpg" };
             DisplayTile5 = new DisplayTileViewModel() { Text = "Switch模块", ImageName = "../../../Images/switch.jpg" };
-			DisplayTile6 = new DisplayTileViewModel() { Text = "预演模块", ImageName = "../../../Images/simulation.jpg" };
+			DisplayTile6 = new DisplayTileViewModel() { Text = "推演模块", ImageName = "../../../Images/simulation.jpg" };
 			DropCommand = new Command(OnDrop);
             ClickCommand = new Command(OnClick);
             MouseLeftButtonUpCommand= new Command(OnMouseLeftButtonUp);
@@ -90,9 +90,8 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			}
             else
             {
-                SelectedFile = $"未选择文件";
+                SwitchFile(_model.CurrentProjectModel.CurrentSolutionFileName);
             }
-            
         }
 
 		private void OnDeleteFile(object? obj)
@@ -188,10 +187,14 @@ namespace StrategyManagerSolution.ViewModels.Diagram
                 {
                     LoadSwitchView((SwitchModel)diagramItemModel);
                 }
+                else if(diagramItemModel is SimulationModel)
+                {
+                    LoadSimulationView((SimulationModel)diagramItemModel);
+                }
             }
             Task task = new Task(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(10);
                 Application.Current.Dispatcher.Invoke(LoadLines);
             });
             task.Start();
@@ -224,6 +227,46 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 						}
 					}
 				}
+                else if (diagramItemViewModel is IfViewModel)
+                {
+                    IfViewModel ifViewModel = (IfViewModel)diagramItemViewModel;
+                    if (ifViewModel.TrueCaseViewModel.CaseModel.LinkingTo !=null)
+                    {
+						IDragDestination dragDestination = FindDragDestination(ifViewModel.TrueCaseViewModel.CaseModel.LinkingTo);
+						AddConnection(ifViewModel.TrueCaseViewModel, dragDestination);
+					}
+					if (ifViewModel.FalseCaseViewModel.CaseModel.LinkingTo != null)
+					{
+						IDragDestination dragDestination = FindDragDestination(ifViewModel.FalseCaseViewModel.CaseModel.LinkingTo);
+						AddConnection(ifViewModel.FalseCaseViewModel, dragDestination);
+					}
+				}
+                else if (diagramItemViewModel is SwitchViewModel)
+                {
+                    SwitchViewModel switchViewModel = (SwitchViewModel)diagramItemViewModel;
+                    foreach(var caseViewModel in switchViewModel.CaseViewModels)
+                    {
+                        if (caseViewModel.CaseModel.LinkingTo !=null)
+                        {
+                            IDragDestination dragDestination = FindDragDestination(caseViewModel.CaseModel.LinkingTo);
+                            AddConnection(caseViewModel, dragDestination);
+                        }
+                    }
+                }
+                else if(diagramItemViewModel is SimulationViewModel)
+                {
+                    SimulationViewModel simulationViewModel = (SimulationViewModel)diagramItemViewModel;
+                    if (simulationViewModel.Player1WinsViewModel.CaseModel.LinkingTo !=null)
+                    {
+						IDragDestination dragDestination = FindDragDestination(simulationViewModel.Player1WinsViewModel.CaseModel.LinkingTo);
+						AddConnection(simulationViewModel.Player1WinsViewModel, dragDestination);
+					}
+					if (simulationViewModel.Player2WinsViewModel.CaseModel.LinkingTo != null)
+					{
+						IDragDestination dragDestination = FindDragDestination(simulationViewModel.Player2WinsViewModel.CaseModel.LinkingTo);
+						AddConnection(simulationViewModel.Player2WinsViewModel, dragDestination);
+					}
+				}
 			}
 		}
 		private void OnFileSelectionChanged(object? obj)
@@ -233,6 +276,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             {
 				string filename = (string)e.AddedItems[0]!;
 				SwitchFile(filename);
+                _model.CurrentProjectModel!.CurrentSolutionFileName = filename;
 			}
 		}
 
@@ -272,6 +316,9 @@ namespace StrategyManagerSolution.ViewModels.Diagram
                     break;
                 case "Switch模块":
                     CreateSwitchView(pos);
+                    break;
+                case "推演模块":
+                    CreateSimulationView(pos);
                     break;
             }
         }
@@ -578,6 +625,46 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             Canvas.SetLeft(switchView, switchViewModel.CanvasPos.X);
             Canvas.SetTop(switchView, switchViewModel.CanvasPos.Y);
 		}
+        private void CreateSimulationView(Point pos)
+        {
+            PopupWindow popupWindow = new PopupWindow();
+            SimulationConfigViewModel simulationConfigViewModel = new SimulationConfigViewModel();
+            popupWindow.DataContext = new PopupViewModel(popupWindow, simulationConfigViewModel);
+            bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+            SimulationModel simulationModel = new SimulationModel(pos,
+                simulationConfigViewModel.SimulationModuleName,
+                simulationConfigViewModel.SimulationDescription,
+                simulationConfigViewModel.SimulationModelClassName,
+                simulationConfigViewModel.Player1Name,
+                simulationConfigViewModel.Player2Name,
+                simulationConfigViewModel.Player1SolutionName,
+                simulationConfigViewModel.Player2SolutionName);
+            SimulationView simulationView = new SimulationView();
+            SimulationViewModel simulationViewModel = new SimulationViewModel(simulationView, simulationModel);
+            //连接上下文
+            simulationView.DataContext = simulationViewModel;
+            //外部事件
+            CanvasClicked += simulationViewModel.OnCanvasClicked;
+            KeyDown += simulationViewModel.OnKeyDown;
+            DragLineStarted += simulationViewModel.OnDragLineStarted;
+            DragLineEnded += simulationViewModel.OnDragLineEnded;
+            //内部事件
+            simulationViewModel.DragStarted += OnDragStarted;
+            simulationViewModel.DragEnded += OnDragEnded;
+            simulationViewModel.Destroy += OnDiagramItemDestroy;
+            simulationViewModel.PositionChanged += OnDiagramItemPositionChanged;
+            // 三重添加
+            DiagramItems.Add(simulationView);
+            DiagramItemViewModels.Add(simulationViewModel);
+            _model.CurrentSolutionModel!.DiagramItemModels.Add(simulationModel);
+            //调整位置
+            Canvas.SetLeft(simulationView, simulationViewModel.CanvasPos.X);
+            Canvas.SetTop(simulationView, simulationViewModel.CanvasPos.Y);
+		}
         private void LoadStartView(StartModel startModel)
         {
 			StartView startView = new StartView();
@@ -673,7 +760,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             foreach(var caseModel in switchModel.CaseModels)
             {
                 CaseView caseView = new CaseView();
-                CaseViewModel caseViewModel = new CaseViewModel(caseView, caseModel);
+                CaseViewModel caseViewModel = new CaseViewModel(caseView, caseModel, true);
                 //连接上下文
                 caseView.DataContext = caseViewModel;
 				// 外部事件
@@ -705,6 +792,29 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			//调整位置
 			Canvas.SetLeft(switchView, switchViewModel.CanvasPos.X);
 			Canvas.SetTop(switchView, switchViewModel.CanvasPos.Y);
+		}
+        private void LoadSimulationView(SimulationModel simulationModel)
+        {
+            SimulationView simulationView = new SimulationView();
+            SimulationViewModel simulationViewModel = new SimulationViewModel(simulationView, simulationModel);
+            //连接上下文
+            simulationView.DataContext = simulationViewModel;
+			//外部事件
+			CanvasClicked += simulationViewModel.OnCanvasClicked;
+			KeyDown += simulationViewModel.OnKeyDown;
+			DragLineStarted += simulationViewModel.OnDragLineStarted;
+			DragLineEnded += simulationViewModel.OnDragLineEnded;
+			//内部事件
+			simulationViewModel.DragStarted += OnDragStarted;
+			simulationViewModel.DragEnded += OnDragEnded;
+			simulationViewModel.Destroy += OnDiagramItemDestroy;
+			simulationViewModel.PositionChanged += OnDiagramItemPositionChanged;
+            // 二重添加
+            DiagramItems.Add(simulationView);
+            DiagramItemViewModels.Add(simulationViewModel);
+            //调整位置
+            Canvas.SetLeft(simulationView, simulationViewModel.CanvasPos.X);
+            Canvas.SetTop(simulationView, simulationViewModel.CanvasPos.Y);
 		}
     }
 }

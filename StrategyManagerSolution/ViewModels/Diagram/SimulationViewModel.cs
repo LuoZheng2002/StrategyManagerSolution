@@ -5,61 +5,59 @@ using StrategyManagerSolution.MVVMUtils;
 using StrategyManagerSolution.Views.Diagram;
 using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Input;
+using System.Windows.Documents;
 
 namespace StrategyManagerSolution.ViewModels.Diagram
 {
-	internal class IfViewModel:ViewModelBase, IDiagramItem, IDragDestination, ISelectable
+	internal class SimulationViewModel: ViewModelBase, IDiagramItem,IDragDestination, ISelectable
 	{
-		public MoveAdorner MoveAdorner { get; }
-		public IfView View { get; }
-		private IfModel _ifModel;
+		public MoveAdorner MoveAdorner { get;}
+		public SimulationView View { get; }
+		private SimulationModel _simulationModel;
 
-	
 		public bool DraggingLine { get; set; }
 
 		public Point CanvasPos
 		{
-			get { return _ifModel.CanvasPos; }
-			set { _ifModel.CanvasPos = value;}
+			get { return _simulationModel.CanvasPos; }
+			set { _simulationModel.CanvasPos = value; }
 		}
-		// 接口
+		//接口
 		public UserControl ViewRef => View;
 		public FrameworkElement DragDestinationView => View;
-		public DiagramElementModel ModelRef => _ifModel;
-		public DiagramElementModel DestinationModel => _ifModel;
-		
-		public string IfStatementText
+		public DiagramElementModel ModelRef => _simulationModel;
+		public DiagramElementModel DestinationModel => _simulationModel;
+
+		public string SimulationDescription
 		{
-			get { return _ifModel.IfStatementText; }
-			set { _ifModel.IfStatementText = value; }
+			get { return _simulationModel.SimulationDescription; }
+			set { _simulationModel.SimulationDescription = value; }
 		}
 		public ConnectionLine? LineEntering { get; set; }
-		public IDragSource? LinkingFrom { get; set; }
-
+		public IDragSource? LinkingFrom { get; set;}
 		public Point Offset { get; } = new Point(0, 20);
-
-		public CaseViewModel TrueCaseViewModel { get; }
-		public CaseViewModel FalseCaseViewModel { get; }
-		public ImageSource ImageSource { get; } = new BitmapImage(new Uri("../../../Images/if.jpg", UriKind.Relative));
+		public CaseViewModel Player1WinsViewModel { get; }
+		public CaseViewModel Player2WinsViewModel { get; }
+		public ImageSource ImageSource { get; } = new BitmapImage(new Uri("../../../Images/simulation.jpg", UriKind.Relative));
 		public Brush TextColor { get; set; } = Brushes.AliceBlue;
 		public Brush BackgroundColor { get; set; } = Brushes.AliceBlue;
-		public bool IsSelected { get; set; }
+		public bool IsSelected { get; set;}
+		public string Player1Name => _simulationModel.Player1Name;
+		public string Player2Name => _simulationModel.Player2Name;
 		// Commands
 		public Command SelectCommand { get; }
 		public Command MouseLeftButtonUpCommand { get; }
 		public Command LoadedCommand { get; }
 		public Command MouseEnterCommand { get; }
 		public Command MouseLeaveCommand { get; }
-
 		//Events
 		public event Action? CanvasClicked;
 		public event Action<KeyEventArgs>? KeyDown;
@@ -67,23 +65,23 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public event Action<IDragDestination>? DragEnded;
 		public event Action<ViewModelBase>? PositionChanged;
 		public event Action<ViewModelBase>? Destroy;
-		public IfViewModel(IfView ifView, IfModel ifModel)
-		{
-			View = ifView;
-			_ifModel = ifModel;
-			MoveAdorner = new MoveAdorner(View, 0,0,30,30);
+
+        public SimulationViewModel(SimulationView simulationView, SimulationModel simulationModel)
+        {
+			View = simulationView;
+			_simulationModel = simulationModel;
+			MoveAdorner = new MoveAdorner(View, 0, 0, 30, 30);
 			MoveAdorner.Drag += OnDrag;
-			
-			TrueCaseViewModel = new CaseViewModel(View.TrueCase, _ifModel.TrueCaseModel, false);
-			FalseCaseViewModel = new CaseViewModel(View.FalseCase, _ifModel.FalseCaseModel, false);
+			Player1WinsViewModel = new CaseViewModel(View.Player1WinsCase, _simulationModel.Player1WinsCaseModel, false);
+			Player2WinsViewModel = new CaseViewModel(View.Player2WinsCase, _simulationModel.Player2WinsCaseModel, false);
 			//内部事件
-			TrueCaseViewModel.DragStarted += OnDragStarted;
-			FalseCaseViewModel.DragStarted += OnDragStarted;
+			Player1WinsViewModel.DragStarted += OnDragStarted;
+			Player2WinsViewModel.DragStarted += OnDragStarted;
 			//外部事件
-			PositionChanged += TrueCaseViewModel.OnPositionChanged;
-			CanvasClicked += TrueCaseViewModel.OnCanvasClicked; 
-			PositionChanged += FalseCaseViewModel.OnPositionChanged;
-			CanvasClicked += FalseCaseViewModel.OnCanvasClicked;
+			PositionChanged += Player1WinsViewModel.OnPositionChanged;
+			CanvasClicked += Player1WinsViewModel.OnCanvasClicked;
+			PositionChanged += Player2WinsViewModel.OnPositionChanged;
+			CanvasClicked += Player2WinsViewModel.OnCanvasClicked;
 			// activate image using bug
 			double a = ImageSource.Width;
 
@@ -92,8 +90,8 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			LoadedCommand = new Command(OnLoaded);
 			MouseEnterCommand = new Command(OnMouseEnter);
 			MouseLeaveCommand = new Command(OnMouseLeave);
-
 		}
+
 		private void OnMouseEnter(object? obj)
 		{
 			if (DraggingLine)
@@ -156,8 +154,8 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		{
 			if (IsSelected && e.Key == Key.Delete)
 			{
-				Destroy?.Invoke(TrueCaseViewModel);
-				Destroy?.Invoke(FalseCaseViewModel);
+				Destroy?.Invoke(Player1WinsViewModel);
+				Destroy?.Invoke(Player2WinsViewModel);
 				Destroy?.Invoke(this);
 				IsSelected = false;
 			}

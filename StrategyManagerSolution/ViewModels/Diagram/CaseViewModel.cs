@@ -19,6 +19,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 {
 	internal class CaseViewModel:ViewModelBase, ISelectable, IDragSource
 	{
+		public bool ShowPosAdorner { get; } = false;
 		private NodeAdorner _nodeAdorner;
 		private PosAdorner _posAdorner;
 		public CaseView View { get; }
@@ -57,8 +58,9 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public event Action<CaseViewModel>? Destroy;
 		public event Action<CaseViewModel>? UpperClicked;
 		public event Action<CaseViewModel>? LowerClicked;
-		public CaseViewModel(CaseView view, CaseModel caseModel)
+		public CaseViewModel(CaseView view, CaseModel caseModel, bool showPosAdorner)
 		{
+			ShowPosAdorner = showPosAdorner;
 			View = view;
 			_caseModel = caseModel;
 			SelectCommand = new Command(OnSelect);
@@ -144,7 +146,8 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			if (adorners == null || !adorners.Contains(_nodeAdorner))
 			{
 				adornerLayer.Add(_nodeAdorner);
-				adornerLayer.Add(_posAdorner);
+				if (ShowPosAdorner)
+					adornerLayer.Add(_posAdorner);
 			}
 			else
 			{
@@ -162,7 +165,8 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			else if (adorners.Contains(_nodeAdorner))
 			{
 				adornerLayer.Remove(_nodeAdorner);
-				adornerLayer.Remove(_posAdorner);
+				if (ShowPosAdorner)
+					adornerLayer.Remove(_posAdorner);
 			}
 			else
 			{

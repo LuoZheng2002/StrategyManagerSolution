@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -102,7 +103,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			CaseModel caseModel = new CaseModel(caseConfigViewModel.CaseName,
 				caseConfigViewModel.CaseText);
 			CaseView caseView = new CaseView();
-			CaseViewModel caseViewModel = new CaseViewModel(caseView, caseModel);
+			CaseViewModel caseViewModel = new CaseViewModel(caseView, caseModel, true);
 			//连接上下文
 			caseView.DataContext = caseViewModel;
 			// 外部事件
@@ -125,6 +126,18 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			_switchModel.CaseModels.Remove(caseViewModel.CaseModel);
 			Destroy?.Invoke(caseViewModel);
 			CaseViewModels.Remove(caseViewModel);
+			Task task = new Task(() =>
+			{
+				Thread.Sleep(10);
+				Application.Current.Dispatcher.Invoke(() =>
+				{
+					foreach(var caseViewModel in CaseViewModels)
+					{
+						PositionChanged?.Invoke(caseViewModel);
+					}
+				});
+			});
+			task.Start();
 		}
 		private void OnMouseEnter(object? obj)
 		{

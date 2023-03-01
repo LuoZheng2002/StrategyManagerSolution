@@ -33,6 +33,8 @@ namespace StrategyManagerSolution.ViewModels
 		private void OnCreate(object? obj)
 		{
 			_model.CreateProject(ProjectName, Location, VisualStudioSolutionName);
+			_model.RecentProjects.Add(new RecentProject(ProjectName + ".smproj", $"{Location}/{ProjectName}/{ProjectName}.smproj", DateTime.Now));
+			_model.SaveProgramData();
 			NavigateToDiagram?.Invoke();
 		}
 		private void OnCancel(object? obj)

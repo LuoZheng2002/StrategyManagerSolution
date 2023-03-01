@@ -7,7 +7,7 @@
         xmlns:fvms="clr-namespace:StrategyManagerSolution.ViewModels.Form"
         xmlns:fviews="clr-namespace:StrategyManagerSolution.Views.Form"
         mc:Ignorable="d"
-        Title="PopupWindow" Height="300" Width="400">
+        Title="PopupWindow" Height="auto" Width="400">
     <Window.Resources>
         <DataTemplate DataType="{x:Type fvms:StrategySetConfigViewModel}">
             <fviews:StrategySetConfig/>
@@ -20,6 +20,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type fvms:CaseConfigViewModel}">
             <fviews:CaseConfig/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type fvms:SimulationConfigViewModel}">
+            <fviews:SimulationConfig/>
         </DataTemplate>
     </Window.Resources>
     <Grid>

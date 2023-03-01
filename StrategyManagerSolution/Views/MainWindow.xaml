@@ -42,9 +42,13 @@
                 <MenuItem Header="保存"/>
             </MenuItem>
             <MenuItem Header="编辑" FontSize="20"/>
-            <MenuItem Header="视图" FontSize="20"/>
+            <MenuItem Header="视图" FontSize="20">
+                <MenuItem Header="转到开始界面" FontSize="20" Command="{Binding NavigateToStartMenuCommand}"/>
+                <MenuItem Header="转到流程图界面" FontSize="20" Command="{Binding NavigateToDiagramCommand}"/>
+                <MenuItem Header="转到演示界面" FontSize="20"/>
+            </MenuItem>
             <MenuItem Header="生成" FontSize="20">
-                <MenuItem Header="生成解决方案"/>
+                <MenuItem Header="生成解决方案" FontSize="20" Command="{Binding BuildSolutionCommand}"/>
             </MenuItem>
         </Menu>
         <ContentControl Grid.Row="1" Content="{Binding CurrentViewModel}"/>

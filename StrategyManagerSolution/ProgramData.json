@@ -1,0 +1,14 @@
+{
+  "$id": "1",
+  "RecentProjects": {
+    "$id": "2",
+    "$values": [
+      {
+        "$id": "3",
+        "FileName": "test2.smproj",
+        "Directory": "C:\\Users\\luo20\\Desktop/test2/test2.smproj",
+        "Date": "2023-03-01T22:41:56.2817894+08:00"
+      }
+    ]
+  }
+}
