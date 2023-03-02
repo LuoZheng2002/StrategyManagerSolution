@@ -24,6 +24,7 @@ namespace StrategyManagerSolution.Models
 		public static void Initialize(this ProjectModel projectModel)
 		{
 			Directory.CreateDirectory(projectModel.ProjectFolder);
+			Directory.CreateDirectory(projectModel.VSCodeFolder);
 			Serializer.Serialize(projectModel.ProjectDirectory, projectModel);
 		}
 	}

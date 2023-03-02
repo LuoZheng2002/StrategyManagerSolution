@@ -35,7 +35,6 @@ namespace StrategyManagerSolution.ViewModels
 		public DiagramElementModel DestinationModel => _strategySetModel;
 		public ConnectionLine? Line { get; set; }
 		public bool DraggingLine { get; set; }
-		private bool _isSelected;
 		public bool IsSelected { get; set; }
 		private int number = 0;
 		public ImageSource Image { get; set; }
@@ -75,6 +74,7 @@ namespace StrategyManagerSolution.ViewModels
 		public event Action<IDragDestination>? DragEnded;
 		public event Action<ViewModelBase>? PositionChanged;
 		public event Action<ViewModelBase>? Destroy;
+		public event Action<ViewModelBase>? OpenScript;
 		public StrategySetViewModel(StrategySetView view, StrategySetModel strategySetModel)
 		{
 			View = view;
@@ -152,6 +152,7 @@ namespace StrategyManagerSolution.ViewModels
 			strategyViewModel.Dropped += OnChildDrop;
 			strategyViewModel.DragStarted += OnDragStarted;
 			strategyViewModel.Destroy += OnDeleteChild;
+			strategyViewModel.OpenScript += OnOpenScript;
 			//外部事件
 			PositionChanged += strategyViewModel.OnPositionChanged;
 			KeyDown += strategyViewModel.OnKeyDown;
@@ -162,6 +163,11 @@ namespace StrategyManagerSolution.ViewModels
 			_strategySetModel.Strategies.Insert(index, strategyModel);
 			
 			number++;
+		}
+
+		public void OnOpenScript(ViewModelBase viewModelBase)
+		{
+			OpenScript?.Invoke(viewModelBase);
 		}
 
 		public void OnDrop(object? obj)

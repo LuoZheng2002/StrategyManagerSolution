@@ -81,7 +81,7 @@ namespace StrategyManagerSolution.ViewModels
 				return;
 			}
 			string result = AssemblyGenerator.GenerateCode(_model.CurrentProjectModel!);
-			File.WriteAllText(_model.CurrentProjectModel.ProjectFolder + "/assembly.cs", result);
+			File.WriteAllText(_model.CurrentProjectModel.VSCodeFolder + "/assembly.cs", result);
 		}
 
 		public void OnKeyDown(object? obj)

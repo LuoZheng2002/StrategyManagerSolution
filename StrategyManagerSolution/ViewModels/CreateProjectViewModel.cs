@@ -17,7 +17,7 @@ namespace StrategyManagerSolution.ViewModels
 		private Model _model;
 		public string ProjectName { get; set; } = "";
 		public string Location { get; set; } = "";
-		public string VisualStudioSolutionName { get; set; } = "";
+		public string VSCodeFolderName { get; set; } = "";
 		public Command CreateCommand { get; }
 		public Command CancelCommand { get; }
 		public Command SelectFolderCommand { get; }
@@ -32,7 +32,7 @@ namespace StrategyManagerSolution.ViewModels
 		}
 		private void OnCreate(object? obj)
 		{
-			_model.CreateProject(ProjectName, Location, VisualStudioSolutionName);
+			_model.CreateProject(ProjectName, Location, VSCodeFolderName);
 			_model.RecentProjects.Add(new RecentProject(ProjectName + ".smproj", $"{Location}/{ProjectName}/{ProjectName}.smproj", DateTime.Now));
 			_model.SaveProgramData();
 			NavigateToDiagram?.Invoke();

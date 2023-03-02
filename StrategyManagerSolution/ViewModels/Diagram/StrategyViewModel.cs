@@ -2,11 +2,15 @@
 using StrategyManagerSolution.Adorners;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.MVVMUtils;
+using StrategyManagerSolution.Utils;
+using StrategyManagerSolution.ViewModels.Form;
+using StrategyManagerSolution.Views;
 using StrategyManagerSolution.Views.Diagram;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -33,7 +37,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		}
 		public Brush Background { get; set; } = Brushes.AliceBlue;
 		public Command DropCommand { get; }
-		public Command SelectCommand { get; }
+		public Command MouseDownCommand { get; }
 		public Command MouseEnterCommand { get; }
 		public Command MouseLeaveCommand { get; }
 		
@@ -57,7 +61,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			View = view;
 			_strategyModel = strategyModel;
 			DropCommand = new Command(OnDrop);
-			SelectCommand = new Command(OnSelect);
+			MouseDownCommand = new Command(OnMouseDown);
 			MouseEnterCommand= new Command(OnMouseEnter);
 			MouseLeaveCommand = new Command(OnMouseLeave);
 			_nodeAdorner = new NodeAdorner(TextBlock);
@@ -87,6 +91,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public event Action<StrategyViewModel>? Destroy;
 		public event Action<StrategyViewModel>? UpperClicked;
 		public event Action<StrategyViewModel>? LowerClicked;
+		public event Action<ViewModelBase>? OpenScript;
 		public void OnDrop(object? obj)
 		{
 			Dropped?.Invoke(this, obj!);
@@ -97,9 +102,35 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			Background = Brushes.AliceBlue;
 			OnPropertyChanged(nameof(Background));
 		}
-		public void OnSelect(object? obj)
+		private void OnDoubleClick()
+		{
+			PopupWindow popupWindow = new PopupWindow();
+			StrategyConfigViewModel strategyConfigViewModel = new StrategyConfigViewModel();
+			strategyConfigViewModel.StrategyName = _strategyModel.StrategyName;
+			strategyConfigViewModel.StrategyModelClassName = _strategyModel.StrategyClassName;
+			strategyConfigViewModel.OpenScript += OnOpenScript;
+			popupWindow.DataContext = new PopupViewModel(popupWindow, strategyConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+			_strategyModel.StrategyName = strategyConfigViewModel.StrategyName;
+			_strategyModel.StrategyClassName = strategyConfigViewModel.StrategyModelClassName;
+			OnPropertyChanged(nameof(Text));
+		}
+		private void OnOpenScript()
+		{
+			OpenScript?.Invoke(this);
+		}
+		public void OnMouseDown(object? obj)
 		{
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
+			if (e.ClickCount == 2)
+			{
+				OnDoubleClick();
+				return;
+			}
 			e.Handled = true;
 			IsSelected = true;
 			Background = Brushes.LightGreen;

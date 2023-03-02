@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -545,6 +546,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			strategySetViewModel.DragEnded += OnDragEnded;
             strategySetViewModel.Destroy += OnDiagramItemDestroy;
             strategySetViewModel.PositionChanged += OnDiagramItemPositionChanged;
+            strategySetViewModel.OpenScript += OnOpenScript;
 			// 三重添加
 			DiagramItems.Add(strategySetView);
 			DiagramItemViewModels.Add(strategySetViewModel);
@@ -706,6 +708,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 				strategyViewModel.Dropped += strategySetViewModel.OnChildDrop;
 				strategyViewModel.DragStarted += strategySetViewModel.OnDragStarted;
 				strategyViewModel.Destroy += strategySetViewModel.OnDeleteChild;
+                strategyViewModel.OpenScript += strategySetViewModel.OnOpenScript;
 				//二重添加
 				strategySetViewModel.StrategyViewModels.Add(strategyViewModel);
                 strategySetViewModel.StrategyViews.Add(strategyView);
@@ -720,6 +723,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			strategySetViewModel.DragEnded += OnDragEnded;
 			strategySetViewModel.Destroy += OnDiagramItemDestroy;
             strategySetViewModel.PositionChanged += OnDiagramItemPositionChanged;
+            strategySetViewModel.OpenScript += OnOpenScript;
 			// 二重添加
 			DiagramItems.Add(strategySetView);
 			DiagramItemViewModels.Add(strategySetViewModel);
@@ -727,7 +731,30 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			Canvas.SetLeft(strategySetView, strategySetViewModel.CanvasPos.X);
 			Canvas.SetTop(strategySetView, strategySetViewModel.CanvasPos.Y);
 		}
-        private void LoadIfView(IfModel ifModel)
+
+		private void OnOpenScript(ViewModelBase diagramItemViewModel)
+		{
+			if (diagramItemViewModel is StrategyViewModel)
+            {
+                StrategyViewModel strategyViewModel = (StrategyViewModel)diagramItemViewModel;
+                string folder = _model.CurrentProjectModel!.VSCodeFolder;
+
+				string directory = $"{folder}/{strategyViewModel.StrategyModel.StrategyClassName}.cs";
+                if (!File.Exists(directory))
+                {
+                    MessageBoxResult result = MessageBox.Show($"脚本文件\"{strategyViewModel.StrategyModel.StrategyClassName}.cs\"未创建，是否创建？", "脚本未创建", MessageBoxButton.OKCancel);
+                    if (result != MessageBoxResult.OK)
+                    {
+                        return;
+                    }
+                    File.Create(directory).Close();
+				}
+                Cmd.ExecuteCommand($"code -r {folder}");
+                Cmd.ExecuteCommand($"code -r {directory}");
+			}
+		}
+
+		private void LoadIfView(IfModel ifModel)
         {
             IfView ifView = new IfView();
             IfViewModel ifViewModel = new IfViewModel(ifView, ifModel);
