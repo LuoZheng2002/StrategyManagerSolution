@@ -105,23 +105,15 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		private void OnDoubleClick()
 		{
 			PopupWindow popupWindow = new PopupWindow();
-			StrategyConfigViewModel strategyConfigViewModel = new StrategyConfigViewModel();
-			strategyConfigViewModel.StrategyName = _strategyModel.StrategyName;
-			strategyConfigViewModel.StrategyModelClassName = _strategyModel.StrategyClassName;
-			strategyConfigViewModel.OpenScript += OnOpenScript;
+			StrategyConfigViewModel strategyConfigViewModel = new StrategyConfigViewModel(_strategyModel);
+			strategyConfigViewModel.OpenScript += ()=>OpenScript?.Invoke(this);
 			popupWindow.DataContext = new PopupViewModel(popupWindow, strategyConfigViewModel);
 			bool? result = popupWindow.ShowDialog();
 			if (result == null || !result.Value)
 			{
 				return;
 			}
-			_strategyModel.StrategyName = strategyConfigViewModel.StrategyName;
-			_strategyModel.StrategyClassName = strategyConfigViewModel.StrategyModelClassName;
 			OnPropertyChanged(nameof(Text));
-		}
-		private void OnOpenScript()
-		{
-			OpenScript?.Invoke(this);
 		}
 		public void OnMouseDown(object? obj)
 		{

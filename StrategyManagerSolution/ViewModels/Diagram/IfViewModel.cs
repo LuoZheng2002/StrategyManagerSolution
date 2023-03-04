@@ -2,6 +2,8 @@
 using StrategyManagerSolution.Adorners;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.MVVMUtils;
+using StrategyManagerSolution.ViewModels.Form;
+using StrategyManagerSolution.Views;
 using StrategyManagerSolution.Views.Diagram;
 using System;
 using System.Collections.Generic;
@@ -22,7 +24,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public MoveAdorner MoveAdorner { get; }
 		public IfView View { get; }
 		private IfModel _ifModel;
-
+		public IfModel IfModel => _ifModel;
 	
 		public bool DraggingLine { get; set; }
 
@@ -54,7 +56,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public Brush BackgroundColor { get; set; } = Brushes.AliceBlue;
 		public bool IsSelected { get; set; }
 		// Commands
-		public Command SelectCommand { get; }
+		public Command MouseDownCommand { get; }
 		public Command MouseLeftButtonUpCommand { get; }
 		public Command LoadedCommand { get; }
 		public Command MouseEnterCommand { get; }
@@ -67,6 +69,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public event Action<IDragDestination>? DragEnded;
 		public event Action<ViewModelBase>? PositionChanged;
 		public event Action<ViewModelBase>? Destroy;
+		public event Action<ViewModelBase>? OpenScript;
 		public IfViewModel(IfView ifView, IfModel ifModel)
 		{
 			View = ifView;
@@ -87,7 +90,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			// activate image using bug
 			double a = ImageSource.Width;
 
-			SelectCommand = new Command(OnSelect);
+			MouseDownCommand = new Command(OnMouseDown);
 			MouseLeftButtonUpCommand = new Command(OnMouseLeftButtonUp);
 			LoadedCommand = new Command(OnLoaded);
 			MouseEnterCommand = new Command(OnMouseEnter);
@@ -132,11 +135,32 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			LineEntering = null;
 			LinkingFrom = null;
 		}
-
-		public void OnSelect(object? obj)
+		public void OnOpenScript()
+		{
+			OpenScript?.Invoke(this);
+		}
+		private void OnDoubleClick()
+		{
+			PopupWindow popupWindow = new PopupWindow();
+			IfConfigViewModel ifConfigViewModel = new IfConfigViewModel(_ifModel);
+			ifConfigViewModel.OpenScript += () => OpenScript?.Invoke(this);
+			popupWindow.DataContext = new PopupViewModel(popupWindow, ifConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+			OnPropertyChanged(nameof(IfStatementText));
+		}
+		public void OnMouseDown(object? obj)
 		{
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
+			if (e.ClickCount == 2)
+			{
+				OnDoubleClick();
+				return;
+			}
 			IsSelected = true;
 			TextColor = Brushes.LightGreen;
 			OnPropertyChanged(nameof(TextColor));

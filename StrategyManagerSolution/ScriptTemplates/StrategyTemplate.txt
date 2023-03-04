@@ -1,0 +1,35 @@
+﻿using Contracts;
+using Contracts.BaseClasses;
+using Contracts.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace __NAMESPACENAME__
+{
+	public class __CLASSNAME__ : StrategyBase
+		 //, ITriggerable
+		 //, IJudgeable
+		 //, IExecutable
+	{
+		// 取消注释以实现ITriggerable接口
+		//public void Trigger(GameModelBase gameModel, out List<ArgBase> triggerArgs)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		// 取消注释以实现IJudgeable接口
+		//public bool Judge(GameModelBase gameModel, ArgBase? triggerArg, out ArgBase judgeArg)
+		//{
+		//	throw new NotImplementedException();
+		//}
+
+		// 取消注释以实现IExecutable接口
+		//public MoveInfo Execute(GameModelBase gameModel, ArgBase? arg)
+		//{
+		//	throw new NotImplementedException();
+		//}
+	}
+}

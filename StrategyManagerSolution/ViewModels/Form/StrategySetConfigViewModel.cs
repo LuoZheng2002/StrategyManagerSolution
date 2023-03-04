@@ -1,4 +1,5 @@
 ﻿using Contracts.Enums;
+using Contracts.MVVMModels;
 using StrategyManagerSolution.MVVMUtils;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,17 @@ namespace StrategyManagerSolution.ViewModels.Form
 {
 	internal class StrategySetConfigViewModel:ViewModelBase
 	{
-		public string StrategySetName { get; set; } = "";
+		private StrategySetModel _strategySetModel;
 		public string PromptText { get; }
-		public StrategySetConfigViewModel(StrategySetType type)
+		public string StrategySetName
 		{
+			get { return _strategySetModel.StrategySetName; }
+			set {  _strategySetModel.StrategySetName = value;}
+		}
+		
+		public StrategySetConfigViewModel(StrategySetModel strategySetModel, StrategySetType type)
+		{
+			_strategySetModel = strategySetModel;
 			PromptText = (type == StrategySetType.Hierarchical ? "等级策略集" : "平行策略集") + "名称: ";
 		}
 	}

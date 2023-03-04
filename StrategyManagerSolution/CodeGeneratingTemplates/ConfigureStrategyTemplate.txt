@@ -1,0 +1,1 @@
+﻿            __STRATEGYCLASSNAME__.LinkTo(__EXECUTABLECLASSNAME__);

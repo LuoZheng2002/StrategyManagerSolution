@@ -9,6 +9,7 @@ namespace StrategyManagerSolution.Models
 	internal class ProgramData
 	{
         public List<RecentProject> RecentProjects { get; set; } = new();
+        public string? ProjectReferenceDirectory { get; set; }
         public ProgramData()
         {
             

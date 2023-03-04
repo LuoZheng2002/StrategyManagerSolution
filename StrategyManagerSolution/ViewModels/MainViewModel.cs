@@ -36,7 +36,10 @@ namespace StrategyManagerSolution.ViewModels
 		public Command NavigateToStartMenuCommand { get; }
 		public Command NavigateToDiagramCommand { get; }
 		public Command BuildSolutionCommand { get; }
+		public Command NavigateToSettingsCommand { get; }
+		public Command ClosingCommand { get; }
 		public event Action<KeyEventArgs>? KeyDown;
+		public event Action? Closing;
 		public void NavigateToDiagram()
 		{
 			if (_model.CurrentProjectModel == null)
@@ -44,8 +47,9 @@ namespace StrategyManagerSolution.ViewModels
 				MessageBox.Show("还未指定打开的项目文件!","错误", MessageBoxButton.OK);
 				return;
 			}
-			DiagramViewModel diagramViewModel = new DiagramViewModel(_model, _mainWindow);
+			DiagramViewModel diagramViewModel = new DiagramViewModel(_model);
 			KeyDown += diagramViewModel.OnKeyDown;
+			Closing += diagramViewModel.OnWindowClosing;
 			CurrentViewModel = diagramViewModel;
 		}
 		public void NavigateToStartMenu()
@@ -57,10 +61,22 @@ namespace StrategyManagerSolution.ViewModels
 		}
 		public void NavigateToCreateProject()
 		{
+			if (_model.ProgramData.ProjectReferenceDirectory == null)
+			{
+				MessageBox.Show("尚未指定SMContracts项目引用路径。\n请到【文件】->【选项】->SMContracts项目引用路径填写相关信息", "错误", MessageBoxButton.OK);
+				return;
+			}
 			CreateProjectViewModel createProjectViewModel = new CreateProjectViewModel(_model);
 			createProjectViewModel.NavigateToStartMenu += NavigateToStartMenu;
 			createProjectViewModel.NavigateToDiagram += NavigateToDiagram;
 			CurrentViewModel = createProjectViewModel;
+		}
+		public void NavigateToSettings()
+		{
+			SettingsViewModel settingsViewModel = new SettingsViewModel(_model);
+			settingsViewModel.NavigateToStartMenu += NavigateToStartMenu;
+			settingsViewModel.NavigateToDiagram += NavigateToDiagram;
+			CurrentViewModel = settingsViewModel;
 		}
 		public MainViewModel(Model model, MainWindow mainWindow)
 		{
@@ -71,6 +87,19 @@ namespace StrategyManagerSolution.ViewModels
 			NavigateToStartMenuCommand = new Command((_)=>NavigateToStartMenu());
 			NavigateToDiagramCommand = new Command((_)=> NavigateToDiagram());
 			BuildSolutionCommand = new Command(OnBuildSolution);
+			NavigateToSettingsCommand = new Command((_) => NavigateToSettings());
+			ClosingCommand = new Command(OnClosing);
+		}
+
+		private void OnClosing(object? obj)
+		{
+			
+			_model.SaveProgramData();
+			if (_model.CurrentSolutionModel != null)
+				_model.SaveCurrentSolution();
+			if (_model.CurrentProjectModel != null)
+				_model.SaveProject();
+			Closing?.Invoke();
 		}
 
 		private void OnBuildSolution(object? obj)

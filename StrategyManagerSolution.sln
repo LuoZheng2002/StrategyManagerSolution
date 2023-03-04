@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrategyManagerSolution", "StrategyManagerSolution\StrategyManagerSolution.csproj", "{CBC28515-FFF9-44C3-95B9-4D77B328CACA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Contracts", "..\ModelPart\Contracts\Contracts.csproj", "{AEBA6B29-AC7A-4284-B666-52ECE10192CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMContracts", "..\ModelPart\Contracts\SMContracts.csproj", "{AEBA6B29-AC7A-4284-B666-52ECE10192CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

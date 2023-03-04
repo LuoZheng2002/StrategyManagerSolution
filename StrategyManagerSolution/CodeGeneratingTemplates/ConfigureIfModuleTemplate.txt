@@ -1,0 +1,2 @@
+﻿            __IFCLASSNAME__.ConnectedToTrue = __CONNECTEDTOTRUEEXECUTABLE__;
+            __IFCLASSNAME__.ConnectedToFalse = __CONNECTEDTOFALSEEXECUTABLE__;

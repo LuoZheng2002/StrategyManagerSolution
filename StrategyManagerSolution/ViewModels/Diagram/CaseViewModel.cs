@@ -2,7 +2,10 @@
 using StrategyManagerSolution.Adorners;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.MVVMUtils;
+using StrategyManagerSolution.ViewModels.Form;
+using StrategyManagerSolution.Views;
 using StrategyManagerSolution.Views.Diagram;
+using StrategyManagerSolution.Views.Form;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,7 +66,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			ShowPosAdorner = showPosAdorner;
 			View = view;
 			_caseModel = caseModel;
-			SelectCommand = new Command(OnSelect);
+			SelectCommand = new Command(OnMouseDown);
 			MouseEnterCommand = new Command(OnMouseEnter);
 			MouseLeaveCommand = new Command(OnMouseLeave);
 			_nodeAdorner = new NodeAdorner(TextBlock);
@@ -109,10 +112,27 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			TextColor = Brushes.AliceBlue;
 			OnPropertyChanged(nameof(TextColor));
 		}
-		public void OnSelect(object? obj)
+		private void OnDoubleClick()
+		{
+			PopupWindow popupWindow = new PopupWindow();
+			CaseConfigViewModel caseConfigViewModel = new CaseConfigViewModel(_caseModel);
+			popupWindow.DataContext = new PopupViewModel(popupWindow, caseConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+			OnPropertyChanged(nameof(CaseText));
+		}
+		public void OnMouseDown(object? obj)
 		{
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
+			if (e.ClickCount == 2)
+			{
+				OnDoubleClick();
+				return;
+			}
 			IsSelected = true;
 			TextColor = Brushes.LightGreen;
 			OnPropertyChanged(nameof(TextColor));

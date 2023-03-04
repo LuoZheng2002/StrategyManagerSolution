@@ -1,0 +1,1 @@
+﻿            __SWITCHCLASSNAME__.Connections.Add(__KEY__, __EXECUTABLECLASSNAME__);

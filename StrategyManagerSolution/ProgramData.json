@@ -5,22 +5,17 @@
     "$values": [
       {
         "$id": "3",
-        "FileName": "test2.smproj",
-        "Directory": "C:\\Users\\luo20\\Desktop/test2/test2.smproj",
-        "Date": "2023-03-01T22:41:56.2817894+08:00"
+        "FileName": "TickTackToe.smproj",
+        "Directory": "C:\\Users\\luo20\\Desktop/TickTackToe/TickTackToe.smproj",
+        "Date": "2023-03-03T09:30:54.4072255+08:00"
       },
       {
         "$id": "4",
-        "FileName": "test3.smproj",
-        "Directory": "C:\\Users\\luo20\\Desktop/test3/test3.smproj",
-        "Date": "2023-03-01T23:51:25.7347873+08:00"
-      },
-      {
-        "$id": "5",
-        "FileName": "test4.smproj",
-        "Directory": "C:\\Users\\luo20\\Desktop/test4/test4.smproj",
-        "Date": "2023-03-02T12:37:02.8739501+08:00"
+        "FileName": "GoGame.smproj",
+        "Directory": "C:\\Users\\luo20\\Desktop/GoGame/GoGame.smproj",
+        "Date": "2023-03-03T09:02:59.101843+08:00"
       }
     ]
-  }
+  },
+  "ProjectReferenceDirectory": "C:\\Users\\luo20\\source\\repos\\ModelPart\\Contracts\\SMContracts.csproj"
 }

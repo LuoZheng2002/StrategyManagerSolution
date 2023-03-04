@@ -1,0 +1,1 @@
+﻿            StrategySet __STRATEGYSETNAME__ = new StrategySet();

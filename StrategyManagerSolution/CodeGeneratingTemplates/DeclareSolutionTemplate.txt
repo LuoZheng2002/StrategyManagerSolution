@@ -1,0 +1,1 @@
+﻿            Solution __SOLUTIONNAME__ = new Solution();

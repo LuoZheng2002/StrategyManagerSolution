@@ -1,0 +1,2 @@
+﻿            __SIMULATIONCLASSNAME__.ConnectedToPlayer1Wins = __PLAYER1EXECUTABLE__;
+            __SIMULATIONCLASSNAME__.ConnectedToPlayer2Wins = __PLAYER2EXECUTABLE__;

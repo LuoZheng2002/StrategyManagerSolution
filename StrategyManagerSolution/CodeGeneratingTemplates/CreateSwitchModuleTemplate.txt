@@ -1,0 +1,1 @@
+﻿            __SWITCHCLASSNAME__ __SWITCHCLASSNAME__ = new __SWITCHCLASSNAME__();

@@ -30,7 +30,6 @@ namespace StrategyManagerSolution.ViewModels.Diagram
     internal class DiagramViewModel:ViewModelBase
     {
         private Model _model;
-        private MainWindow _mainWindow;
         private readonly DragInfo _dragInfo = new DragInfo();
         public Canvas? Canvas { get; set; }
         public ObservableCollection<FrameworkElement> DiagramItems { get; } = new();
@@ -59,11 +58,9 @@ namespace StrategyManagerSolution.ViewModels.Diagram
         public event Action? DragLineStarted;
         public event Action? DragLineEnded;
         
-        public DiagramViewModel(Model model, MainWindow mainWindow)
+        public DiagramViewModel(Model model)
         {
             _model = model;
-            _mainWindow = mainWindow;
-            _mainWindow.Closing += OnWindowClosing;
             DisplayTile0 = new DisplayTileViewModel() { Text = "开始", ImageName = "../../../Images/Start.jpg" };
 			DisplayTile1 = new DisplayTileViewModel() { Text = "单个策略", ImageName = "../../../Images/bulb.jpg" };
             DisplayTile2 = new DisplayTileViewModel() { Text = "平行策略集", ImageName = "../../../Images/liberty.jpg" };
@@ -112,17 +109,17 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		private void OnCreateNewFile(object? obj)
 		{
 			PopupWindow popupWindow = new PopupWindow();
-            StrategySetConfigViewModel strategySetConfigViewModel = new(StrategySetType.Hierarchical);
-            popupWindow.DataContext = new PopupViewModel(popupWindow, strategySetConfigViewModel);
+            FileConfigViewModel fileConfigViewModel = new FileConfigViewModel();
+            popupWindow.DataContext = new PopupViewModel(popupWindow, fileConfigViewModel);
             bool? result = popupWindow.ShowDialog();
             if (result == null || !result.Value)
             {
                 return;
             }
-            string solutionName = strategySetConfigViewModel.StrategySetName;
+            string solutionName = fileConfigViewModel.SolutionName;
             _model.CurrentProjectModel!.AddSolution(solutionName);
             ProjectFiles.Add(solutionName + ".smsln");
-            SwitchFile(strategySetConfigViewModel.StrategySetName + ".smsln");
+            SwitchFile(solutionName + ".smsln");
 		}
         private void SwitchFile(string filename)
         {
@@ -135,10 +132,9 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			OnPropertyChanged(nameof(SelectedFile));
 			LoadSolutionFile();
 		}
-		private void OnWindowClosing(object? sender, CancelEventArgs e)
+		public void OnWindowClosing()
 		{
-            _model.SaveCurrentSolution();
-            _model.SaveProject();
+            
 		}
 
 		private void OnSaveFile(object? obj)
@@ -522,8 +518,12 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		}
         private void CreateStrategySetView(Point pos, StrategySetType type)
         {
-            PopupWindow popupWindow = new PopupWindow();
-            StrategySetConfigViewModel strategySetConfigViewModel = new(type);
+			StrategySetModel strategySetModel = new StrategySetModel(type, pos);
+			StrategySetView strategySetView = new StrategySetView();
+			StrategySetViewModel strategySetViewModel = new StrategySetViewModel(strategySetView, strategySetModel);
+
+			PopupWindow popupWindow = new PopupWindow();
+            StrategySetConfigViewModel strategySetConfigViewModel = new(strategySetModel, type);
             popupWindow.DataContext = new PopupViewModel(popupWindow,strategySetConfigViewModel);
             bool? result = popupWindow.ShowDialog();
             if (result == null || !result.Value)
@@ -531,10 +531,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
                 return;
             }
 
-            StrategySetModel strategySetModel = new StrategySetModel(strategySetConfigViewModel.StrategySetName, type, pos);
-			StrategySetView strategySetView = new StrategySetView();
-			StrategySetViewModel strategySetViewModel = new StrategySetViewModel(strategySetView, strategySetModel);
-			// 连接上下文
+           // 连接上下文
 			strategySetView.DataContext = strategySetViewModel;
 			// 外部事件
 			CanvasClicked += strategySetViewModel.OnCanvasClicked;
@@ -557,22 +554,23 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		}
         private void CreateIfView(Point pos)
         {
-            PopupWindow popupWindow = new PopupWindow();
-            IfConfigViewModel ifConfigViewModel = new();
-            popupWindow.DataContext = new PopupViewModel(popupWindow, ifConfigViewModel);
-            bool? result = popupWindow.ShowDialog();
-            if (result == null || !result.Value)
-            {
-                return;
-            }
-            IfModel ifModel = new IfModel(pos,
-                ifConfigViewModel.IfModuleName, 
-                ifConfigViewModel.IfStatementText, 
-                ifConfigViewModel.IfModelClassName);
+            IfModel ifModel = new IfModel(pos);
             IfView ifView = new IfView();
             IfViewModel ifViewModel = new IfViewModel(ifView, ifModel);
-            //连接上下文
-            ifView.DataContext = ifViewModel;
+
+			PopupWindow popupWindow = new PopupWindow();
+            IfConfigViewModel ifConfigViewModel = new IfConfigViewModel(ifModel);
+            ifConfigViewModel.OpenScript += ifViewModel.OnOpenScript;
+            ifViewModel.OpenScript += OnOpenScript;
+			popupWindow.DataContext = new PopupViewModel(popupWindow, ifConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+
+			//连接上下文
+			ifView.DataContext = ifViewModel;
             //外部事件
             CanvasClicked += ifViewModel.OnCanvasClicked;
             KeyDown += ifViewModel.OnKeyDown;
@@ -593,22 +591,23 @@ namespace StrategyManagerSolution.ViewModels.Diagram
         }
         private void CreateSwitchView(Point pos)
         {
-            PopupWindow popupWindow = new PopupWindow();
-            SwitchConfigViewModel switchConfigViewModel = new();
-            popupWindow.DataContext = new PopupViewModel(popupWindow, switchConfigViewModel);
-            bool? result = popupWindow.ShowDialog();
+            SwitchModel switchModel = new SwitchModel(pos);
+            SwitchView switchView = new SwitchView();
+            SwitchViewModel switchViewModel = new SwitchViewModel(switchView, switchModel);
+            
+			PopupWindow popupWindow = new PopupWindow();
+			SwitchConfigViewModel switchConfigViewModel = new SwitchConfigViewModel(switchModel);
+            switchConfigViewModel.OpenScript += switchViewModel.OnOpenScript;
+            switchViewModel.OpenScript += OnOpenScript;
+			popupWindow.DataContext = new PopupViewModel(popupWindow, switchConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
 			if (result == null || !result.Value)
 			{
 				return;
 			}
-            SwitchModel switchModel = new SwitchModel(pos,
-                switchConfigViewModel.SwitchModuleName,
-                switchConfigViewModel.SwitchStatementText,
-                switchConfigViewModel.SwitchModelClassName);
-            SwitchView switchView = new SwitchView();
-            SwitchViewModel switchViewModel = new SwitchViewModel(switchView, switchModel);
-            //连接上下文
-            switchView.DataContext = switchViewModel;
+
+			//连接上下文
+			switchView.DataContext = switchViewModel;
             //外部事件
             CanvasClicked += switchViewModel.OnCanvasClicked;
             KeyDown += switchViewModel.OnKeyDown;
@@ -629,24 +628,20 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		}
         private void CreateSimulationView(Point pos)
         {
-            PopupWindow popupWindow = new PopupWindow();
-            SimulationConfigViewModel simulationConfigViewModel = new SimulationConfigViewModel();
+			SimulationModel simulationModel = new SimulationModel(pos);
+			SimulationView simulationView = new SimulationView();
+			SimulationViewModel simulationViewModel = new SimulationViewModel(simulationView, simulationModel);
+
+			PopupWindow popupWindow = new PopupWindow();
+            SimulationConfigViewModel simulationConfigViewModel = new SimulationConfigViewModel(simulationModel) ;
+            simulationConfigViewModel.OpenScript += simulationViewModel.OnOpenScript;
+            simulationViewModel.OpenScript += OnOpenScript;
             popupWindow.DataContext = new PopupViewModel(popupWindow, simulationConfigViewModel);
             bool? result = popupWindow.ShowDialog();
 			if (result == null || !result.Value)
 			{
 				return;
 			}
-            SimulationModel simulationModel = new SimulationModel(pos,
-                simulationConfigViewModel.SimulationModuleName,
-                simulationConfigViewModel.SimulationDescription,
-                simulationConfigViewModel.SimulationModelClassName,
-                simulationConfigViewModel.Player1Name,
-                simulationConfigViewModel.Player2Name,
-                simulationConfigViewModel.Player1SolutionName,
-                simulationConfigViewModel.Player2SolutionName);
-            SimulationView simulationView = new SimulationView();
-            SimulationViewModel simulationViewModel = new SimulationViewModel(simulationView, simulationModel);
             //连接上下文
             simulationView.DataContext = simulationViewModel;
             //外部事件
@@ -734,24 +729,50 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 
 		private void OnOpenScript(ViewModelBase diagramItemViewModel)
 		{
+            string? className = null;
+			string folder = _model.CurrentProjectModel!.VSCodeFolder;
+            string namespaceName = _model.CurrentProjectModel!.VSCodeFolderName;
+            string? content = null;
 			if (diagramItemViewModel is StrategyViewModel)
             {
                 StrategyViewModel strategyViewModel = (StrategyViewModel)diagramItemViewModel;
-                string folder = _model.CurrentProjectModel!.VSCodeFolder;
-
-				string directory = $"{folder}/{strategyViewModel.StrategyModel.StrategyClassName}.cs";
-                if (!File.Exists(directory))
-                {
-                    MessageBoxResult result = MessageBox.Show($"脚本文件\"{strategyViewModel.StrategyModel.StrategyClassName}.cs\"未创建，是否创建？", "脚本未创建", MessageBoxButton.OKCancel);
-                    if (result != MessageBoxResult.OK)
-                    {
-                        return;
-                    }
-                    File.Create(directory).Close();
-				}
-                Cmd.ExecuteCommand($"code -r {folder}");
-                Cmd.ExecuteCommand($"code -r {directory}");
+                className = strategyViewModel.StrategyModel.StrategyClassName;
+                content = ScriptTemplate.StrategyTemplate(namespaceName, className);
 			}
+            else if(diagramItemViewModel is IfViewModel)
+            {
+                IfViewModel ifViewModel = (IfViewModel)diagramItemViewModel;
+                className = ifViewModel.IfModel.IfModelClassName;
+                content = ScriptTemplate.IfTemplate(namespaceName, className);
+            }
+            else if (diagramItemViewModel is SwitchViewModel)
+            {
+                SwitchViewModel switchViewModel = (SwitchViewModel)diagramItemViewModel;
+                className = switchViewModel.SwitchModel.SwitchModelClassName;
+                content = ScriptTemplate.SwitchTemplate(namespaceName, className);
+            }
+            else if(diagramItemViewModel is SimulationViewModel)
+            {
+                MessageBox.Show("暂时不支持Simulation脚本");
+                return;
+            }
+            Debug.Assert(className != null);
+            Debug.Assert(content != null);
+            string filename = $"{className}.cs";
+			string directory = $"{folder}/{filename}";
+            if (!File.Exists(directory))
+            {
+                MessageBoxResult result = MessageBox.Show($"脚本文件\"{filename}\"未创建，是否创建？", "脚本未创建", MessageBoxButton.OKCancel);
+                if (result != MessageBoxResult.OK)
+                {
+                    return;
+                }
+                File.Create(directory).Close();
+                File.WriteAllText(directory, content);
+			}
+            Cmd.ExecuteCommand($"code -r {folder}");
+            Cmd.ExecuteCommand($"code -r {directory}");
+			
 		}
 
 		private void LoadIfView(IfModel ifModel)
@@ -770,6 +791,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
             ifViewModel.DragEnded += OnDragEnded;
             ifViewModel.Destroy += OnDiagramItemDestroy;
             ifViewModel.PositionChanged += OnDiagramItemPositionChanged;
+            ifViewModel.OpenScript += OnOpenScript;
             // 二重添加
             DiagramItems.Add(ifView);
             DiagramItemViewModels.Add(ifViewModel);
@@ -813,6 +835,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			switchViewModel.DragEnded += OnDragEnded;
 			switchViewModel.Destroy += OnDiagramItemDestroy;
 			switchViewModel.PositionChanged += OnDiagramItemPositionChanged;
+            switchViewModel.OpenScript += OnOpenScript;
 			// 二重添加
 			DiagramItems.Add(switchView);
 			DiagramItemViewModels.Add(switchViewModel);
@@ -836,6 +859,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			simulationViewModel.DragEnded += OnDragEnded;
 			simulationViewModel.Destroy += OnDiagramItemDestroy;
 			simulationViewModel.PositionChanged += OnDiagramItemPositionChanged;
+            simulationViewModel.OpenScript += OnOpenScript;
             // 二重添加
             DiagramItems.Add(simulationView);
             DiagramItemViewModels.Add(simulationViewModel);

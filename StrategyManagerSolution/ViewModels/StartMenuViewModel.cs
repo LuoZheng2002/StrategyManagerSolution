@@ -19,6 +19,7 @@ namespace StrategyManagerSolution.ViewModels
 		public Command OpenRecentCommand { get; }
 		public Command OpenProjectCommand { get; }
 		public Command CreateProjectCommand { get; }
+		public Command ClearRecordCommand { get; }
 		public event Action? NavigateToDiagram;
 		public event Action? NavigateToCreateProject;
 		public StartMenuViewModel(Model model)
@@ -32,6 +33,12 @@ namespace StrategyManagerSolution.ViewModels
 			OpenRecentCommand = new(OnOpenRecent);
 			OpenProjectCommand = new(OnOpenProject);
 			CreateProjectCommand = new(OnCreateProject);
+			ClearRecordCommand = new(OnClearRecord);
+		}
+		private void OnClearRecord(object? obj)
+		{
+			RecentProjectViewModels.Clear();
+			_model.RecentProjects.Clear();
 		}
 		private void OnOpenRecent(object? obj)
 		{

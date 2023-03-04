@@ -24,10 +24,16 @@
         <DataTemplate DataType="{x:Type vms:CreateProjectViewModel}">
             <views:CreateProjectView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:SettingsViewModel}">
+            <views:SettingsView/>
+        </DataTemplate>
     </Window.Resources>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="KeyDown">
             <i:InvokeCommandAction Command="{Binding KeyDownCommand}" PassEventArgsToCommand="True"/>
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding ClosingCommand}" PassEventArgsToCommand="True"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Grid>
@@ -40,6 +46,7 @@
                 <MenuItem Header="新建"/>
                 <MenuItem Header="打开"/>
                 <MenuItem Header="保存"/>
+                <MenuItem Header="设置" Command="{Binding NavigateToSettingsCommand}"/>
             </MenuItem>
             <MenuItem Header="编辑" FontSize="20"/>
             <MenuItem Header="视图" FontSize="20">

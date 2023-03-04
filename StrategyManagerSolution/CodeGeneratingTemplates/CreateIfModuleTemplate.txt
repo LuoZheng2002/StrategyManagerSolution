@@ -1,0 +1,1 @@
+﻿            __IFCLASSNAME__ __IFCLASSNAME__ = new __IFCLASSNAME__();

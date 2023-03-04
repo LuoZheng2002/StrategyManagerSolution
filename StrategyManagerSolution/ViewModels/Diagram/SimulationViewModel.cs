@@ -14,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using System.Windows.Documents;
+using StrategyManagerSolution.Views;
+using StrategyManagerSolution.ViewModels.Form;
 
 namespace StrategyManagerSolution.ViewModels.Diagram
 {
@@ -22,7 +24,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public MoveAdorner MoveAdorner { get;}
 		public SimulationView View { get; }
 		private SimulationModel _simulationModel;
-
+		public SimulationModel SimulationModel => _simulationModel;
 		public bool DraggingLine { get; set; }
 
 		public Point CanvasPos
@@ -65,7 +67,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public event Action<IDragDestination>? DragEnded;
 		public event Action<ViewModelBase>? PositionChanged;
 		public event Action<ViewModelBase>? Destroy;
-
+		public event Action<ViewModelBase>? OpenScript;
         public SimulationViewModel(SimulationView simulationView, SimulationModel simulationModel)
         {
 			View = simulationView;
@@ -85,7 +87,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			// activate image using bug
 			double a = ImageSource.Width;
 
-			SelectCommand = new Command(OnSelect);
+			SelectCommand = new Command(OnMouseDown);
 			MouseLeftButtonUpCommand = new Command(OnMouseLeftButtonUp);
 			LoadedCommand = new Command(OnLoaded);
 			MouseEnterCommand = new Command(OnMouseEnter);
@@ -130,11 +132,34 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			LineEntering = null;
 			LinkingFrom = null;
 		}
-
-		public void OnSelect(object? obj)
+		public void OnOpenScript()
+		{
+			OpenScript?.Invoke(this);
+		}
+		private void OnDoubleClick()
+		{
+			PopupWindow popupWindow = new PopupWindow();
+			SimulationConfigViewModel simulationConfigViewModel = new SimulationConfigViewModel(_simulationModel);
+			simulationConfigViewModel.OpenScript += () => OpenScript?.Invoke(this);
+			popupWindow.DataContext = new PopupViewModel(popupWindow, simulationConfigViewModel); ;
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+			OnPropertyChanged(nameof(SimulationDescription));
+			OnPropertyChanged(nameof(Player1Name)); 
+			OnPropertyChanged(nameof(Player2Name));
+		}
+		public void OnMouseDown(object? obj)
 		{
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
+			if (e.ClickCount == 2)
+			{
+				OnDoubleClick();
+				return;
+			}
 			IsSelected = true;
 			TextColor = Brushes.LightGreen;
 			OnPropertyChanged(nameof(TextColor));

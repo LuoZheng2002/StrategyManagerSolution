@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="StrategyManagerSolution.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:StrategyManagerSolution.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="Strategy Manager" FontSize="40" Margin="20 0 0 0"/>
+        <TextBlock Grid.Row="1" Text="设置" FontSize="30" Margin="20 0 0 20"/>
+        <TextBlock Grid.Row="2" Text="SMContracts引用项目路径" FontSize="20" Margin="40 0 0 0"/>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" FontSize="18" Margin="40 0 0 0" Height="35" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Text="{Binding ProjectReferenceDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Grid.Column="1" Content="选择文件夹" Command="{Binding SelectProjectReferenceCommand}" Width="80" FontSize="15" HorizontalAlignment="Right" Margin="0 0 80 0"/>
+        </Grid>
+        <Button Grid.Row="5" Content="确定" Command="{Binding ConfirmCommand}" FontSize="20" Width="100" Height="40" Margin="0 0 0 30"/>
+    </Grid>
+</UserControl>

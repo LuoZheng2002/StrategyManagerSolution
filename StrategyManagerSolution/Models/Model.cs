@@ -30,7 +30,7 @@ namespace StrategyManagerSolution.Models
 			string projectFolder = location + "/" + projectName;
 			string projectDirectory = projectFolder + "/" + projectName + ".smproj";
 			CurrentProjectModel = new ProjectModel(projectName, projectFolder, projectDirectory, vsCodeFolderName);
-			CurrentProjectModel.Initialize();
+			CurrentProjectModel.Initialize(ProgramData.ProjectReferenceDirectory!);
 			CurrentProjectModel.AddSolution("main");
 			CurrentSolutionModel = Serializer.Deserialize<SolutionModel>(projectFolder + "/main.smsln");
 		}

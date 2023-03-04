@@ -28,7 +28,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public MoveAdorner MoveAdorner { get; }
 		public SwitchView View { get; }
 		private SwitchModel _switchModel;
-		
+		public SwitchModel SwitchModel => _switchModel;
 		public bool DraggingLine { get; set; }
 		public Point CanvasPos
 		{
@@ -70,6 +70,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 		public event Action<IDragDestination>? DragEnded;
 		public event Action<ViewModelBase>? PositionChanged;
 		public event Action<ViewModelBase>? Destroy;
+		public event Action<ViewModelBase>? OpenScript;
 
 		public SwitchViewModel(SwitchView switchView, SwitchModel switchModel)
 		{
@@ -81,7 +82,7 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			// activate image using bug
 			double a = ImageSource.Width;
 
-			SelectCommand = new Command(OnSelect);
+			SelectCommand = new Command(OnMouseDown);
 			MouseLeftButtonUpCommand = new Command(OnMouseLeftButtonUp);
 			LoadedCommand = new Command(OnLoaded);
 			MouseEnterCommand = new Command(OnMouseEnter);
@@ -91,19 +92,18 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 
 		private void OnAddCase(object? obj)
 		{
+			CaseModel caseModel = new CaseModel();
+			CaseView caseView = new CaseView();
+			CaseViewModel caseViewModel = new CaseViewModel(caseView, caseModel, true);
+
 			PopupWindow popupWindow = new PopupWindow();
-			CaseConfigViewModel caseConfigViewModel = new();
+			CaseConfigViewModel caseConfigViewModel = new CaseConfigViewModel(caseModel);
 			popupWindow.DataContext = new PopupViewModel(popupWindow, caseConfigViewModel);
 			bool? result = popupWindow.ShowDialog();
 			if (result == null || !result.Value)
 			{
 				return;
 			}
-
-			CaseModel caseModel = new CaseModel(caseConfigViewModel.CaseName,
-				caseConfigViewModel.CaseText);
-			CaseView caseView = new CaseView();
-			CaseViewModel caseViewModel = new CaseViewModel(caseView, caseModel, true);
 			//连接上下文
 			caseView.DataContext = caseViewModel;
 			// 外部事件
@@ -177,11 +177,32 @@ namespace StrategyManagerSolution.ViewModels.Diagram
 			LineEntering = null;
 			LinkingFrom = null;
 		}
-
-		public void OnSelect(object? obj)
+		public void OnOpenScript()
+		{
+			OpenScript?.Invoke(this);
+		}
+		private void OnDoubleClick()
+		{
+			PopupWindow popupWindow = new PopupWindow();
+			SwitchConfigViewModel switchConfigViewModel = new SwitchConfigViewModel(_switchModel);
+			switchConfigViewModel.OpenScript += () => OpenScript?.Invoke(this);
+			popupWindow.DataContext = new PopupViewModel(popupWindow, switchConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+			OnPropertyChanged(nameof(SwitchTargetText));
+		}
+		public void OnMouseDown(object? obj)
 		{
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
+			if (e.ClickCount==2)
+			{
+				OnDoubleClick();
+				return;
+			}
 			IsSelected = true;
 			TextColor = Brushes.LightGreen;
 			OnPropertyChanged(nameof(TextColor));

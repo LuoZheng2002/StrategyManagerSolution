@@ -38,7 +38,7 @@
                 <TextBlock Grid.Column="1" Background="{Binding TextColor}" Text="{Binding IfStatementText}" FontSize="15" MinWidth="200">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseLeftButtonDown">
-                            <i:InvokeCommandAction Command="{Binding SelectCommand}" PassEventArgsToCommand="True"/>
+                            <i:InvokeCommandAction Command="{Binding MouseDownCommand}" PassEventArgsToCommand="True"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </TextBlock>

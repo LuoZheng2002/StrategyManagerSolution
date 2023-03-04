@@ -20,6 +20,8 @@ using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.ViewModels.Diagram;
 using Contracts.MVVMModels;
 using Contracts.Enums;
+using StrategyManagerSolution.Views;
+using StrategyManagerSolution.ViewModels.Form;
 
 namespace StrategyManagerSolution.ViewModels
 {
@@ -85,7 +87,7 @@ namespace StrategyManagerSolution.ViewModels
 			double a = Image.Width;
 
 			DropCommand = new Command(OnDrop);
-			SelectCommand = new Command(OnSelect);
+			SelectCommand = new Command(OnMouseDown);
 			MouseLeftButtonUpCommand = new Command(OnMouseLeftButtonUp);
 			LoadedCommand = new Command(OnLoaded);
 			MouseEnterCommand = new Command(OnMouseEnter);
@@ -141,13 +143,22 @@ namespace StrategyManagerSolution.ViewModels
 		}
 		private void AddChild(int index)
 		{
-			StrategyModel strategyModel = new StrategyModel("strategyName", "className");
+			StrategyModel strategyModel = new StrategyModel();
 			StrategyView strategyView = new StrategyView();
 			StrategyViewModel strategyViewModel = new StrategyViewModel(strategyView, strategyModel);
+
+			PopupWindow popupWindow = new PopupWindow();
+			StrategyConfigViewModel strategyConfigViewModel = new StrategyConfigViewModel(strategyModel);
+			strategyConfigViewModel.OpenScript += () => OnOpenScript(strategyViewModel);
+			popupWindow.DataContext = new PopupViewModel(popupWindow, strategyConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+
 			//连接上下文
 			strategyView.DataContext = strategyViewModel;
-			//属性注册
-			strategyViewModel.Text = "Strategy " + number.ToString();
 			//内部事件
 			strategyViewModel.Dropped += OnChildDrop;
 			strategyViewModel.DragStarted += OnDragStarted;
@@ -194,10 +205,27 @@ namespace StrategyManagerSolution.ViewModels
 			}
 			e.Handled = true;
 		}
-		public void OnSelect(object? obj)
+		private void OnDoubleClick()
+		{
+			PopupWindow popupWindow = new PopupWindow();
+			StrategySetConfigViewModel strategySetConfigViewModel = new StrategySetConfigViewModel(_strategySetModel, _strategySetModel.Type);
+			popupWindow.DataContext = new PopupViewModel(popupWindow, strategySetConfigViewModel);
+			bool? result = popupWindow.ShowDialog();
+			if (result == null || !result.Value)
+			{
+				return;
+			}
+			OnPropertyChanged(nameof(Text));
+		}
+		public void OnMouseDown(object? obj)
 		{
 			MouseButtonEventArgs e = (obj as MouseButtonEventArgs)!;
 			e.Handled = true;
+			if (e.ClickCount == 2)
+			{
+				OnDoubleClick();
+				return;
+			}
 			IsSelected = true;
 			TextColor = Brushes.LightGreen;
 			OnPropertyChanged(nameof(TextColor));

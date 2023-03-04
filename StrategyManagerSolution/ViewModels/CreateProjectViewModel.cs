@@ -33,7 +33,7 @@ namespace StrategyManagerSolution.ViewModels
 		private void OnCreate(object? obj)
 		{
 			_model.CreateProject(ProjectName, Location, VSCodeFolderName);
-			_model.RecentProjects.Add(new RecentProject(ProjectName + ".smproj", $"{Location}/{ProjectName}/{ProjectName}.smproj", DateTime.Now));
+			_model.RecentProjects.Insert(0, new RecentProject(ProjectName + ".smproj", $"{Location}/{ProjectName}/{ProjectName}.smproj", DateTime.Now));
 			_model.SaveProgramData();
 			NavigateToDiagram?.Invoke();
 		}

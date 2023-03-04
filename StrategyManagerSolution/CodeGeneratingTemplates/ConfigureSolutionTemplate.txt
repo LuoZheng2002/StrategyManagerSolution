@@ -1,0 +1,13 @@
+﻿            /*__CREATESTRATEGYSETS__*/
+            /*__CREATEIFMODULES__*/
+            /*__CREATESWITCHMODULES__*/
+            /*__CREATESIMULATIONMODULES__*/
+            __SOLUTIONNAME__.StartExecutable = __STARTEXECUTABLE__;
+            /*__CONFIGURESTRATEGIES__*/
+            /*__CONFIGUREIFMODULES__*/
+            /*__CONFIGURESWITCHMODULES__*/
+            /*__CONFIGURESIMULATIONMODULES*/
+            /*__ADDSTRATEGYSETS__*/
+            /*__ADDIFMODULES__*/
+            /*__ADDSWITCHMODULES__*/
+            /*__ADDSIMULATIONMODULES__*/
