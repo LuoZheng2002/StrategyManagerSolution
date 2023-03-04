@@ -1,1 +1,2 @@
 ﻿            StrategySet __STRATEGYSETNAME__ = new StrategySet();
+            /*__ADDSTRATEGIES__*/

@@ -15,10 +15,9 @@ namespace __NAMESPACENAME__
         {
             ProjectSolution = new ProjectSolution();
 
-			// ProjectSolution.Solutions.Add(...);
-			/*__DECLARESOLUTIONS__*/
-			/*__CONFIGURESOLUTIONS__*/
-
+/*__DECLARESOLUTIONS__*/
+/*__CONFIGURESOLUTIONS__*/
+/*__ADDSOLUTIONS__*/
 			ProjectSolution.MainSolution = __MAINSOLUTION__;
 		}
 	}

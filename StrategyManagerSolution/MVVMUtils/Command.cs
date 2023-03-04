@@ -11,7 +11,7 @@ namespace StrategyManagerSolution.MVVMUtils
     {
         public event Action<object?> Called;
         public event EventHandler? CanExecuteChanged;
-        private bool _canExecute = true;
+        public bool _canExecute = true;
         public void OnCanExecuteChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);

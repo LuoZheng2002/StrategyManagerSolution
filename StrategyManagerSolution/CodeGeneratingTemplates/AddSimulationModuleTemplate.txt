@@ -1,0 +1,1 @@
+﻿            __SOLUTIONNAME__.SimulationModules.Add(__SIMULATIONCLASSNAME__);

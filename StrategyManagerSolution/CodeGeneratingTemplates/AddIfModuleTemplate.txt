@@ -1,0 +1,2 @@
+﻿            __SOLUTIONNAME__.IfModules.Add(__IFCLASSNAME__);
+

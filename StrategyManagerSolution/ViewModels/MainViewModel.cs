@@ -78,6 +78,17 @@ namespace StrategyManagerSolution.ViewModels
 			settingsViewModel.NavigateToDiagram += NavigateToDiagram;
 			CurrentViewModel = settingsViewModel;
 		}
+		public void NavigateToBuildSolution()
+		{
+			BuildSolutionViewModel buildSolutionViewModel = new BuildSolutionViewModel(_model);
+			buildSolutionViewModel.NavigateToDiagram += NavigateToDiagram;
+			buildSolutionViewModel.NavigateToDebug += NavigateToDebug;
+			CurrentViewModel = buildSolutionViewModel;
+		}
+		public void NavigateToDebug()
+		{
+
+		}
 		public MainViewModel(Model model, MainWindow mainWindow)
 		{
 			_model = model;
@@ -109,8 +120,10 @@ namespace StrategyManagerSolution.ViewModels
 				MessageBox.Show("未指定项目文件!", "错误", MessageBoxButton.OK);
 				return;
 			}
-			string result = AssemblyGenerator.GenerateCode(_model.CurrentProjectModel!);
-			File.WriteAllText(_model.CurrentProjectModel.VSCodeFolder + "/assembly.cs", result);
+			NavigateToBuildSolution();
+			//string result = AssemblyGenerator.GenerateCode(_model.CurrentProjectModel!);
+			//File.WriteAllText(_model.CurrentProjectModel.VSCodeFolder + "/assembly.cs", result);
+			//MessageBox.Show("生成成功!\n");
 		}
 
 		public void OnKeyDown(object? obj)

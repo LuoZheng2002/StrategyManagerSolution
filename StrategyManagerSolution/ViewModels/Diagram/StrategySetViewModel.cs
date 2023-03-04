@@ -47,8 +47,8 @@ namespace StrategyManagerSolution.ViewModels
 		public IDragSource? LinkingFrom { get; set; }
 		public string Text
 		{
-			get { return _strategySetModel.StrategySetName; }
-			set { _strategySetModel.StrategySetName = value; }
+			get { return _strategySetModel.StrategySetDescription; }
+			set { _strategySetModel.StrategySetDescription = value; }
 		}
 		public Point Offset { get; } = new Point(0, 20);
 		public Point CanvasPos
