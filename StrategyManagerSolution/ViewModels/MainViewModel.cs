@@ -37,6 +37,7 @@ namespace StrategyManagerSolution.ViewModels
 		public Command NavigateToDiagramCommand { get; }
 		public Command BuildSolutionCommand { get; }
 		public Command NavigateToSettingsCommand { get; }
+		public Command NavigateToTestCommand { get; }
 		public Command ClosingCommand { get; }
 		public event Action<KeyEventArgs>? KeyDown;
 		public event Action? Closing;
@@ -82,12 +83,18 @@ namespace StrategyManagerSolution.ViewModels
 		{
 			BuildSolutionViewModel buildSolutionViewModel = new BuildSolutionViewModel(_model);
 			buildSolutionViewModel.NavigateToDiagram += NavigateToDiagram;
-			buildSolutionViewModel.NavigateToDebug += NavigateToDebug;
+			buildSolutionViewModel.NavigateToTest += NavigateToTest;
 			CurrentViewModel = buildSolutionViewModel;
 		}
-		public void NavigateToDebug()
+		public void NavigateToTest()
 		{
-
+			if (_model.CurrentProjectModel == null)
+			{
+				MessageBox.Show("请先选择项目!");
+				return;
+			}
+			TestViewModel testViewModel = new TestViewModel(_model);
+			CurrentViewModel = testViewModel;
 		}
 		public MainViewModel(Model model, MainWindow mainWindow)
 		{
@@ -99,6 +106,7 @@ namespace StrategyManagerSolution.ViewModels
 			NavigateToDiagramCommand = new Command((_)=> NavigateToDiagram());
 			BuildSolutionCommand = new Command(OnBuildSolution);
 			NavigateToSettingsCommand = new Command((_) => NavigateToSettings());
+			NavigateToTestCommand = new Command((_) => NavigateToTest());
 			ClosingCommand = new Command(OnClosing);
 		}
 

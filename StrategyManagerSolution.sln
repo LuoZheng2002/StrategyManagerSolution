@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrategyManagerSolution", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMContracts", "..\ModelPart\Contracts\SMContracts.csproj", "{AEBA6B29-AC7A-4284-B666-52ECE10192CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrategyTester", "StrategyTester\StrategyTester.csproj", "{5AE0DBBC-1FD5-4BA2-B019-922CF1128593}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AEBA6B29-AC7A-4284-B666-52ECE10192CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEBA6B29-AC7A-4284-B666-52ECE10192CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEBA6B29-AC7A-4284-B666-52ECE10192CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AE0DBBC-1FD5-4BA2-B019-922CF1128593}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AE0DBBC-1FD5-4BA2-B019-922CF1128593}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AE0DBBC-1FD5-4BA2-B019-922CF1128593}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AE0DBBC-1FD5-4BA2-B019-922CF1128593}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

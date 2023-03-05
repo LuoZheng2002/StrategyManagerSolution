@@ -2,6 +2,7 @@
 using StrategyManagerSolution.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,7 @@ namespace StrategyManagerSolution.Models
 		public ProjectModel? CurrentProjectModel { get; set; }
 		// 当前选中的流程图文件
 		public SolutionModel? CurrentSolutionModel { get; set; }
+		public Process? TestProcess { get; set; }
 		public void OpenProject(string directory)
 		{
 			CurrentProjectModel = Serializer.Deserialize<ProjectModel>(directory);

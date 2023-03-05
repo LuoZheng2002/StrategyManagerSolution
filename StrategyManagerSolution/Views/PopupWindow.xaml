@@ -30,6 +30,9 @@
         <DataTemplate DataType="{x:Type fvms:FileConfigViewModel}">
             <fviews:FileConfig/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type fvms:TestAssemblyConfigViewModel}">
+            <fviews:TestAssemblyConfig/>
+        </DataTemplate>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>

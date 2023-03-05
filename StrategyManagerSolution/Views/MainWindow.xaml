@@ -30,6 +30,9 @@
         <DataTemplate DataType="{x:Type vms:BuildSolutionViewModel}">
             <views:BuildSolutionView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:TestViewModel}">
+            <views:TestView/>
+        </DataTemplate>
     </Window.Resources>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="KeyDown">
@@ -55,7 +58,7 @@
             <MenuItem Header="视图" FontSize="20">
                 <MenuItem Header="转到开始界面" FontSize="20" Command="{Binding NavigateToStartMenuCommand}"/>
                 <MenuItem Header="转到流程图界面" FontSize="20" Command="{Binding NavigateToDiagramCommand}"/>
-                <MenuItem Header="转到演示界面" FontSize="20"/>
+                <MenuItem Header="转到测试界面" FontSize="20" Command="{Binding NavigateToTestCommand}"/>
             </MenuItem>
             <MenuItem Header="生成" FontSize="20">
                 <MenuItem Header="生成解决方案" FontSize="20" Command="{Binding BuildSolutionCommand}"/>

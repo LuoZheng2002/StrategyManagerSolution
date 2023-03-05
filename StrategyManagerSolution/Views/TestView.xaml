@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="StrategyManagerSolution.Views.TestView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:StrategyManagerSolution.Views"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="测试" FontSize="30" Margin="20 0 0 10"/>
+            <Button Grid.Column="1" Content="选择互动程序集" Width="150" Height="35" FontSize="20" Margin="0 0 40 0" Command="{Binding ChooseAssemblyCommand}"/>
+            <Button Grid.Column="2" Content="回到流程图" Width="150" Height="35" FontSize="20" Margin="0 0 40 0" Command="{Binding NavigateToDiagramCommand}"/>
+        </Grid>
+        
+        <Grid Grid.Row="1" Margin="40 0 40 40">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Grid.Column="0" Source="{Binding GraphicsImageSource}" Margin="30"/>
+            <Grid Grid.Column="1" Margin="20 0 20 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="0">
+                    <TextBox Text="{Binding ConsoleOutputText}" FontSize="10" TextWrapping="WrapWithOverflow" IsReadOnly="False" AcceptsReturn="True"/>
+                </ScrollViewer>
+                <TextBox Grid.Row="1" Height="30" Text="{Binding ConsoleInputText}" FontSize="20">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="KeyDown">
+                            <i:InvokeCommandAction Command="{Binding InputKeyDownCommand}" PassEventArgsToCommand="True"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

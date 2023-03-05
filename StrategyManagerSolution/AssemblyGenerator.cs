@@ -24,14 +24,22 @@ namespace StrategyManagerSolution
 				solutionModels.Add(solutionName, solutionModel);
 			}
 			result = "";
-			result += "/*** [GenerateCode] ***/\n";
-			result += File.ReadAllText("../../../CodeGeneratingTemplates/CodeGeneratingTemplate.txt");
-			result = result.Replace("__NAMESPACENAME__", projectModel.VSCodeFolderName);
-			result = result.Replace("__CLASSNAME__", projectModel.ProjectName + "ProjSlnFuncProvider");
-			result = result.Replace("/*__DECLARESOLUTIONS__*/", DeclareSolutions(projectModel));
-			result = result.Replace("/*__CONFIGURESOLUTIONS__*/", ConfigureSolutions(projectModel, solutionModels));
-			result = result.Replace("/*__ADDSOLUTIONS__*/", AddSolutions(projectModel));
-			result = result.Replace("__MAINSOLUTION__", "main");
+			try
+			{
+				result += "/*** [GenerateCode] ***/\n";
+				result += File.ReadAllText("../../../CodeGeneratingTemplates/CodeGeneratingTemplate.txt");
+				result = result.Replace("__NAMESPACENAME__", projectModel.VSCodeFolderName);
+				result = result.Replace("__CLASSNAME__", projectModel.ProjectName + "ProjSlnFuncProvider");
+				result = result.Replace("/*__DECLARESOLUTIONS__*/", DeclareSolutions(projectModel));
+				result = result.Replace("/*__CONFIGURESOLUTIONS__*/", ConfigureSolutions(projectModel, solutionModels));
+				result = result.Replace("/*__ADDSOLUTIONS__*/", AddSolutions(projectModel));
+				result = result.Replace("__MAINSOLUTION__", "main");
+			}
+			catch(Exception e) 
+			{
+				errorMessages = e.Message;
+				succeeded = false;
+			}
 			return succeeded;
 		}
 		private static string AddSolutions(ProjectModel projectModel)
@@ -79,6 +87,12 @@ namespace StrategyManagerSolution
 				configureSolution = configureSolution.Replace("/*__ADDSIMULATIONMODULES__*/", AddSimulationModules(solutionModel));
 				configureSolution = configureSolution.Replace("__SOLUTIONNAME__", solutionModel.SolutionName);
 				StartModel startModel = (StartModel)solutionModel.DiagramItemModels.FirstOrDefault(item=>item is StartModel)!;
+				if (startModel == null)
+					throw new Exception($"在解决方案{solutionModel.SolutionName}中未提供开始模块");
+				if (startModel.LinkingTo == null)
+				{
+					throw new Exception($"在解决方案{solutionModel.SolutionName}中开始模块未连接到其它模块");
+				}
 				configureSolution = configureSolution.Replace("__STARTEXECUTABLE__", startModel.LinkingTo!.ClassName);
 				result += configureSolution;
 			}

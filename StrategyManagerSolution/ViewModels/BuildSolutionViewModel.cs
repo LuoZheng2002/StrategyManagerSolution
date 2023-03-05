@@ -1,10 +1,12 @@
 ﻿using Contracts.BaseClasses;
+using Contracts.Communication;
 using StrategyManagerSolution.Models;
 using StrategyManagerSolution.MVVMUtils;
 using StrategyManagerSolution.Utils;
 using StrategyManagerSolution.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.RightsManagement;
@@ -37,7 +39,7 @@ namespace StrategyManagerSolution.ViewModels
 		public Command LoadedCommand { get; }
 		public Command NavigateToDiagramCommand { get; }
 		public event Action? NavigateToDiagram;
-		public event Action? NavigateToDebug;
+		public event Action? NavigateToTest;
         public BuildSolutionViewModel(Model model)
         {
             _model = model;
@@ -87,21 +89,36 @@ namespace StrategyManagerSolution.ViewModels
 		}
 		private bool DoIntegrityCheck()
 		{
-			try
+			bool succeeded = false;
+			if (_model.TestProcess !=null && !_model.TestProcess.HasExited)
 			{
-				ProjSlnFuncProviderBase funcProvider = DLLLoader.LoadDLL<ProjSlnFuncProviderBase>($"{_model.CurrentProjectModel!.VSCodeFolder}/bin/Debug/net6.0-windows/{_model.CurrentProjectModel.VSCodeFolderName}.dll",
-					$"{_model.CurrentProjectModel.VSCodeFolderName}.{_model.CurrentProjectModel.ProjectName}ProjSlnFuncProvider");
+				_model.TestProcess.Kill();
 			}
-			catch (Exception e)
-			{
-				_integrityError = e.Message;
-				return false;
-			}
-			return true;
+			_model.TestProcess = new Process();
+			_model.TestProcess.StartInfo.FileName = "../../../../StrategyTester/bin/Debug/net6.0-windows/StrategyTester.exe";
+			_model.TestProcess.StartInfo.CreateNoWindow = false;
+			_model.TestProcess.StartInfo.RedirectStandardInput = true;
+			_model.TestProcess.StartInfo.RedirectStandardOutput = true;
+			_model.TestProcess.Start();
+			_model.TestProcess.StandardInput.WriteLine(TextConvention.ProjSlnPath + " " + _model.CurrentProjectModel!.VSCodeFolder + "/bin/Debug/net6.0-windows/" + _model.CurrentProjectModel.ProjectName + ".dll");
+			string str = _model.TestProcess.StandardOutput.ReadLine();
+			Console.WriteLine(str);
+			_model.TestProcess.StandardInput.WriteLine(TextConvention.FuncProviderFullName + " " + _model.CurrentProjectModel!.VSCodeFolderName + "." + _model.CurrentProjectModel.ProjectName + "ProjSlnFuncProvider");
+			str = _model.TestProcess.StandardOutput.ReadLine();
+			Console.WriteLine(str);
+			_model.TestProcess.StandardInput.WriteLine(TextConvention.Integrity);
+			str = _model.TestProcess.StandardOutput.ReadLine();
+			Console.WriteLine(str);
+			if (str!.Contains(TextConvention.OK))
+				succeeded = true;
+
+			_model.TestProcess.Kill();
+			_model.TestProcess = null;
+			return succeeded;
 		}
 		private void OnTry(object? obj)
 		{
-			throw new NotImplementedException();
+			NavigateToTest?.Invoke();
 		}
 		private void BuildAsync()
 		{
