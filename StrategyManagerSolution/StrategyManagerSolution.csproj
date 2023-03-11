@@ -6,10 +6,15 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Images\SM.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="CodeGeneratingTemplates\CodeGeneratingTemplate.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\SM.ico" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using Contracts.MVVMModels;
+﻿using Contracts;
+using Contracts.MVVMModels;
 using StrategyManagerSolution.Utils;
 using System;
 using System.Collections.Generic;

@@ -47,11 +47,48 @@ namespace StrategyTester
 						OnTestAssemblyClassFullNameGiven(testAssemblyClassFullName);
 						break;
 					}
+				case TextConvention.Start:
+					{
+						OnStart();
+						break;
+					}
+				case TextConvention.LeftButtonDown:
+					{
+						OnLeftButtonDown(double.Parse(segments[1]), double.Parse(segments[2]));
+						break;
+					}
+				case TextConvention.RightButtonDown:
+					{
+						OnRightButtonDown(double.Parse(segments[1]), double.Parse(segments[2]));
+						break;
+					}
+				case TextConvention.ConsoleInput:
+					{
+						string input = line.Replace(TextConvention.ConsoleInput + " ", "");
+						Tester!.OnReceiveMessage(input);
+						break;
+					}
 				default:
 					{
 						throw new Exception("Unrecognized command");
 					}
 			}
+		}
+		private static void OnLeftButtonDown(double x, double y)
+		{
+			Tester!.OnLeftButtonDown(x, y);
+		}
+		private static void OnRightButtonDown(double x, double y)
+		{
+			Tester!.OnRightButtonDown(x, y);
+		}
+		private static void OnStart()
+		{
+			Console.WriteLine(TextConvention.OK);
+			if (Tester == null)
+				throw new Exception("Tester not set.");
+			Tester.ProjSlnFuncProvider = ProjSlnFuncProvider;
+			Tester!.Init();
 		}
 		private static void OnTestAssemblyClassFullNameGiven(string fullName)
 		{

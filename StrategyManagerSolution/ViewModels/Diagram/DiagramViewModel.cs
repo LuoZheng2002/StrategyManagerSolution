@@ -1,4 +1,5 @@
-﻿using Contracts.Enums;
+﻿using Contracts;
+using Contracts.Enums;
 using Contracts.MVVMModels;
 using StrategyManagerSolution.DiagramMisc;
 using StrategyManagerSolution.Models;

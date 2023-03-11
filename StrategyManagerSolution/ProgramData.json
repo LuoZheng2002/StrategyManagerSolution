@@ -5,12 +5,18 @@
     "$values": [
       {
         "$id": "3",
+        "FileName": "TickTackToeAI.smproj",
+        "Directory": "C:\\Users\\luo20\\Desktop\\StrategyManagerProjects/TickTackToeAI/TickTackToeAI.smproj",
+        "Date": "2023-03-10T09:50:39.477375+08:00"
+      },
+      {
+        "$id": "4",
         "FileName": "TickTackToe.smproj",
         "Directory": "C:\\Users\\luo20\\Desktop/TickTackToe/TickTackToe.smproj",
         "Date": "2023-03-03T09:30:54.4072255+08:00"
       },
       {
-        "$id": "4",
+        "$id": "5",
         "FileName": "GoGame.smproj",
         "Directory": "C:\\Users\\luo20\\Desktop/GoGame/GoGame.smproj",
         "Date": "2023-03-03T09:02:59.101843+08:00"

@@ -28,7 +28,16 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Image Grid.Column="0" Source="{Binding GraphicsImageSource}" Margin="30"/>
+            <Image Grid.Column="0" Source="{Binding GraphicsImageSource}" Margin="30">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                        <i:InvokeCommandAction Command="{Binding LeftButtonDownCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="MouseRightButtonDown">
+                        <i:InvokeCommandAction Command="{Binding RightButtonDownCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Image>
             <Grid Grid.Column="1" Margin="20 0 20 0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -37,7 +46,7 @@
                 <ScrollViewer Grid.Row="0">
                     <TextBox Text="{Binding ConsoleOutputText}" FontSize="10" TextWrapping="WrapWithOverflow" IsReadOnly="False" AcceptsReturn="True"/>
                 </ScrollViewer>
-                <TextBox Grid.Row="1" Height="30" Text="{Binding ConsoleInputText}" FontSize="20">
+                <TextBox Grid.Row="1" Height="30" Text="{Binding ConsoleInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontSize="20">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="KeyDown">
                             <i:InvokeCommandAction Command="{Binding InputKeyDownCommand}" PassEventArgsToCommand="True"/>
